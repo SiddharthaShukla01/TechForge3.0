@@ -23,8 +23,19 @@ TRANSLATIONS = {
         "nav_find_help": "📍 Find Nearest Help",
         "nav_alerts": "🔔 Live Alerts Feed",
         "nav_weather": "🌦️ Live Weather & Alerts",
+        "nav_ai_chat": "🤖 Aapda AI Mitra (AI Assistant)",
         "nav_suggestions": "💡 Suggestions & Ideas",
         "nav_admin": "⚙️ Control Room / Admin",
+
+        # AI Assistant Section
+        "ai_title": "🤖 Aapda AI Mitra — 24x7 Disaster Emergency Assistant",
+        "ai_subtitle": "AI-powered real-time disaster Q&A, live shelter/hospital vacancy queries, weather updates, and survival protocols.",
+        "ai_placeholder": "Ask AI anything (e.g. 'Where is the nearest shelter in Chamoli?', 'What to do in an earthquake?')...",
+        "ai_send": "Send Query",
+        "ai_quick_title": "💡 Quick Emergency Questions:",
+        "ai_auth_header": "🛡️ AI Ground Evidence Authenticity & Deepfake Analysis",
+        "ai_auth_analyzing": "Running AI Computer Vision & EXIF Forensics on uploaded media...",
+
 
         # Weather Section
         "weather_title": "🌦️ Live Weather & Weather Alert System",
@@ -220,8 +231,19 @@ TRANSLATIONS = {
         "nav_find_help": "📍 नजदीकी मदद खोजें (अस्पताल व राहत शिविर)",
         "nav_alerts": "🔔 लाइव अलर्ट और चेतावनी संदेश",
         "nav_weather": "🌦️ लाइव मौसम व चेतावनी",
+        "nav_ai_chat": "🤖 आपदा AI मित्र (AI Assistant)",
         "nav_suggestions": "💡 सुझाव व विचार (Suggestions)",
         "nav_admin": "⚙️ कंट्रोल रूम / अधिकारी पैनल",
+
+        # AI Assistant Section
+        "ai_title": "🤖 आपदा AI मित्र — 24x7 आपदा आपातकालीन सहायक",
+        "ai_subtitle": "एआई संचालित वास्तविक समय आपदा प्रश्नोत्तर, लाइव राहत शिविर/अस्पताल बेड खोज, मौसम और सुरक्षा दिशा-निर्देश।",
+        "ai_placeholder": "AI से कुछ भी पूछें (उदा. 'चमोली में शिविर कहां हैं?', 'भूकंप आने पर क्या करें?')...",
+        "ai_send": "प्रश्न पूछें",
+        "ai_quick_title": "💡 त्वरित आपातकालीन प्रश्न:",
+        "ai_auth_header": "🛡️ AI जमीनी साक्ष्य प्रामाणिकता एवं डीपफेक विश्लेषण",
+        "ai_auth_analyzing": "अपलोड किए गए साक्ष्य पर AI कंप्यूटर विज़न व EXIF फोरेंसिक जांच जारी...",
+
 
         # Weather Section
         "weather_title": "🌦️ लाइव मौसम एवं मौसम चेतावनी प्रणाली",

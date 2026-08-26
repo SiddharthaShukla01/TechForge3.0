@@ -5,8 +5,10 @@ import urllib.parse
 import altair as alt
 from datetime import datetime
 import weather as wx
+import ai_engine
 
 os.makedirs("uploads", exist_ok=True)
+
 
 
 from database import (
@@ -681,8 +683,10 @@ with st.sidebar:
 
     nav_options = [
         t("nav_dashboard", lang), t("nav_report", lang), t("nav_find_help", lang),
-        t("nav_alerts", lang), t("nav_weather", lang), t("nav_suggestions", lang), t("nav_admin", lang)
+        t("nav_alerts", lang), t("nav_weather", lang), t("nav_ai_chat", lang),
+        t("nav_suggestions", lang), t("nav_admin", lang)
     ]
+
     nav_icons = ["📊", "📝", "📍", "🔔", "🌤️", "💡", "⚙️"]
 
     selected_nav = st.radio(
@@ -1072,15 +1076,40 @@ elif selected_nav == t("nav_report", lang):
             st.success(t("report_success_title", lang))
             st.info(t("report_success_msg", lang).replace("{did}", str(did)))
             if saved_paths:
-                st.markdown("##### 📸 " + ("संलग्न प्रमाण पूर्वावलोकन" if is_hi else "Attached Evidence Preview"))
-                p_cols = st.columns(min(len(saved_paths), 3))
+                st.markdown("##### 📸 " + ("संलग्न प्रमाण एवं AI प्रामाणिकता फोरेंसिक जांच" if is_hi else "Attached Evidence & AI Authenticity Forensics"))
                 for idx, fpath in enumerate(saved_paths):
-                    with p_cols[idx % len(p_cols)]:
-                        if fpath.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
-                            st.image(fpath, caption=os.path.basename(fpath), use_container_width=True)
-                        elif fpath.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
-                            st.video(fpath)
+                    with st.container(border=True):
+                        c_media, c_ai = st.columns([1, 1])
+                        with c_media:
+                            if fpath.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                                st.image(fpath, caption=os.path.basename(fpath), use_container_width=True)
+                            elif fpath.lower().endswith(('.mp4', '.mov', '.avi', '.mkv')):
+                                st.video(fpath)
+                        with c_ai:
+                            with open(fpath, "rb") as mf:
+                                auth_data = ai_engine.analyze_media_authenticity(mf.read(), os.path.basename(fpath))
+                            
+                            st.markdown(f"""
+                            <div style="font-size:0.92rem;font-weight:800;color:#F8FAFC;margin-bottom:4px;">
+                                🛡️ {'AI साक्ष्य प्रामाणिकता रिपोर्ट' if is_hi else 'AI Media Authenticity Report'}
+                            </div>
+                            <div style="margin-bottom:6px;">
+                                <span style="font-size:1.2rem;font-weight:900;color:#38BDF8;">{auth_data['authenticity_score']}%</span>
+                                <span style="font-size:0.78rem;color:#94A3B8;">{' प्रामाणिकता स्कोर (Confidence Score)' if is_hi else ' Authenticity Confidence'}</span>
+                            </div>
+                            <div style="font-size:0.85rem;font-weight:800;color:#34D399;margin-bottom:6px;">
+                                {auth_data['verdict_text_hi'] if is_hi else auth_data['verdict_text_en']}
+                            </div>
+                            <div style="font-size:0.75rem;color:#94A3B8;line-height:1.4;margin-bottom:8px;">
+                                • <b>{'डिवाइस' if is_hi else 'Device'}:</b> {auth_data['camera_model']} | <b>{'समय' if is_hi else 'Time'}:</b> {auth_data['capture_time']}
+                            </div>
+                            """, unsafe_allow_html=True)
+                            for chk in auth_data['checks'][:3]:
+                                chk_icon = "🟢" if chk['status'] == "PASS" else "🟡"
+                                st.markdown(f"<div style='font-size:0.75rem;color:#CBD5E1;margin-bottom:2px;'>{chk_icon} <b>{chk['name']}:</b> {chk['detail']}</div>", unsafe_allow_html=True)
+
             st.balloons()
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1667,9 +1696,128 @@ elif selected_nav == t("nav_weather", lang):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# 6. AAPDA AI MITRA (AI DISASTER CHATBOT & MEDIA FORENSICS)
+# ─────────────────────────────────────────────────────────────────────────────
+elif selected_nav == t("nav_ai_chat", lang):
+    st.markdown(f'<div class="portal-title">{t("ai_title", lang)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="portal-subtitle">{t("ai_subtitle", lang)}</div>', unsafe_allow_html=True)
+
+    tab_chat, tab_verify = st.tabs([
+        "💬 " + ("आपदा मित्र AI चैट (Disaster AI Chatbot)" if is_hi else "Disaster AI Chatbot"),
+        "🛡️ " + ("फोटो/वीडियो डीपफेक व प्रामाणिकता जांच (Media Forensics)" if is_hi else "Media Authenticity & Deepfake Detector")
+    ])
+
+    with tab_chat:
+        st.markdown(f"<div style='font-size:0.85rem;font-weight:800;color:#93C5FD;margin-bottom:8px;'>{t('ai_quick_title', lang)}</div>", unsafe_allow_html=True)
+        q1, q2, q3 = st.columns(3)
+        q4, q5, q6 = st.columns(3)
+
+        preset_query = None
+        with q1:
+            if st.button("🏠 " + ("चमोली में राहत शिविर कहां हैं?" if is_hi else "Shelters in Chamoli"), use_container_width=True):
+                preset_query = "चमोली में राहत शिविर कहां हैं?" if is_hi else "Where are open shelters in Chamoli?"
+        with q2:
+            if st.button("🏥 " + ("देहरादून में खाली अस्पताल बेड" if is_hi else "Hospital Beds in Dehradun"), use_container_width=True):
+                preset_query = "देहरादून में खाली अस्पताल बेड दिखाओ" if is_hi else "Show hospital and ICU beds in Dehradun"
+        with q3:
+            if st.button("🌦️ " + ("रुद्रप्रयाग का लाइव मौसम" if is_hi else "Weather in Rudraprayag"), use_container_width=True):
+                preset_query = "रुद्रप्रयाग का लाइव मौसम अपडेट" if is_hi else "What is the live weather in Rudraprayag?"
+        with q4:
+            if st.button("🚨 " + ("भूकंप आने पर क्या करना चाहिए?" if is_hi else "Earthquake Safety Steps"), use_container_width=True):
+                preset_query = "भूकंप आने पर क्या सुरक्षा उपाय करने चाहिए?" if is_hi else "What to do during an earthquake?"
+        with q5:
+            if st.button("🍞 " + ("हरिद्वार में खाद्य सामग्री भंडार" if is_hi else "Food Stockpile in Haridwar"), use_container_width=True):
+                preset_query = "हरिद्वार जिले में खाद्य सामग्री और राशन भंडार कितना है?" if is_hi else "What is the food and water stockpile in Haridwar?"
+        with q6:
+            if st.button("📞 " + ("24x7 इमरजेंसी हेल्पलाइन नंबर" if is_hi else "Emergency Helpline Numbers"), use_container_width=True):
+                preset_query = "उत्तराखंड आपदा हेल्पलाइन नंबर" if is_hi else "Emergency helplines for SDRF and Control Room"
+
+        st.markdown("---")
+
+        # Chat history state initialization
+        if "ai_chat_history" not in st.session_state:
+            st.session_state["ai_chat_history"] = [
+                {
+                    "role": "assistant",
+                    "text": (
+                        "🤖 **नमस्ते! मैं आपका आपदा मित्र AI सहायक हूं।**\n"
+                        "मैं उत्तराखंड के सभी 13 जिलों में राहत शिविर, अस्पताल बेड, लाइव मौसम, राशन भंडार और सुरक्षा दिशा-निर्देशों में आपकी तत्काल सहायता कर सकता हूं। मुझसे कोई भी प्रश्न पूछें!"
+                        if is_hi else
+                        "🤖 **Hello! I am your Aapda AI Mitra Assistant.**\n"
+                        "I can assist you with real-time shelter vacancies, hospital ICU beds, live satellite weather, food stockpiles, and survival protocols across all 13 Uttarakhand districts. Ask me anything!"
+                    )
+                }
+            ]
+
+        # Display conversation history
+        for msg in st.session_state["ai_chat_history"]:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["text"])
+
+        # Chat input bar
+        typed_query = st.chat_input(t("ai_placeholder", lang))
+        active_query = typed_query or preset_query
+
+        if active_query:
+            st.session_state["ai_chat_history"].append({"role": "user", "text": active_query})
+            with st.chat_message("user"):
+                st.markdown(active_query)
+
+            with st.chat_message("assistant"):
+                with st.spinner("AI विश्लेषण कर रहा है..." if is_hi else "Aapda AI is thinking..."):
+                    ai_reply = ai_engine.ask_disaster_ai(active_query, lang=lang)
+                    st.markdown(ai_reply)
+                    st.session_state["ai_chat_history"].append({"role": "assistant", "text": ai_reply})
+            if preset_query:
+                st.rerun()
+
+    with tab_verify:
+        st.markdown(f"#### 🛡️ {'साक्ष्य प्रामाणिकता एवं डीपफेक जांच टूल' if is_hi else 'Standalone Media Authenticity & Deepfake Forensic Tool'}")
+        st.markdown("सोशल मीडिया पर प्रसारित आपदा की तस्वीरों या वीडियो को यहां अपलोड करके जांचें कि क्या वे वास्तविक हैं या एआई-जनरेटेड / पुरानी फेक तस्वीरें हैं।" if is_hi else "Upload any disaster image or video from social media to verify whether it is genuine ground evidence, AI-generated, or recycled fake news.")
+
+        test_file = st.file_uploader(
+            "फोटो या वीडियो चुनें" if is_hi else "Select Image or Video to Analyze",
+            type=["jpg", "jpeg", "png", "webp", "mp4", "mov"],
+            key="standalone_verifier"
+        )
+        if test_file:
+            v_col1, v_col2 = st.columns([1, 1])
+            with v_col1:
+                if test_file.name.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                    st.image(test_file, caption="Uploaded for Forensic Analysis", use_container_width=True)
+                else:
+                    st.video(test_file)
+            
+            with v_col2:
+                with st.spinner("AI कंप्यूटर विज़न व EXIF फोरेंसिक स्कैन जारी..." if is_hi else "Running AI Computer Vision & EXIF forensic scan..."):
+                    verdict_data = ai_engine.analyze_media_authenticity(test_file.getvalue(), test_file.name)
+                
+                st.markdown(f"""
+                <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(59,130,246,0.3);border-radius:14px;padding:16px;">
+                    <div style="font-size:0.85rem;color:#94A3B8;text-transform:uppercase;font-weight:800;">Forensic Inspection Result</div>
+                    <div style="font-size:1.6rem;font-weight:900;color:#38BDF8;margin:6px 0;">{verdict_data['authenticity_score']}% <span style="font-size:0.9rem;color:#CBD5E1;">Authenticity Score</span></div>
+                    <div style="font-size:1.05rem;font-weight:800;color:#34D399;margin-bottom:10px;">{verdict_data['verdict_text_hi'] if is_hi else verdict_data['verdict_text_en']}</div>
+                    <div style="font-size:0.82rem;color:#94A3B8;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
+                        • <b>Device:</b> {verdict_data['camera_model']}<br/>
+                        • <b>Time:</b> {verdict_data['capture_time']}<br/>
+                        • <b>Hash:</b> <code>{verdict_data['file_hash']}</code>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown("##### 🔍 " + ("विस्तृत फोरेंसिक चेकलिस्ट" if is_hi else "Detailed Verification Breakdown"))
+                for c in verdict_data['checks']:
+                    stat_icon = "🟢" if c['status'] == "PASS" else "🟡"
+                    with st.container(border=True):
+                        st.markdown(f"**{stat_icon} {c['name']}**: {c['detail']}")
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # 7. ADMIN
 # ─────────────────────────────────────────────────────────────────────────────
 elif selected_nav == t("nav_admin", lang):
+
     st.markdown(f'<div class="portal-title">{t("admin_title", lang)}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="portal-subtitle">{t("admin_subtitle", lang)}</div>', unsafe_allow_html=True)
 
