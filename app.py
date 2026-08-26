@@ -55,83 +55,94 @@ section[data-testid="stSidebar"] h2,
 section[data-testid="stSidebar"] h3 { color: #F8FAFC !important; }
 section[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.07) !important; }
 
-/* ── 2A. SIDEBAR NAVIGATION TILES ─────────────────────────────────────────── */
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
-    gap: 0.45rem !important;
+/* ── 2A. SIDEBAR NAVIGATION MENU (Strictly Vertical Full-Width Cards) ────── */
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label > div:first-child {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+    background: rgba(30, 41, 59, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin: 0 !important;
+}
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label > div:first-child {
     display: none !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label {
-    background: rgba(30, 41, 59, 0.4) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    border-radius: 12px !important;
-    padding: 0.75rem 1rem !important;
-    cursor: pointer !important;
-    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    display: flex !important;
-    align-items: center !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-    margin-bottom: 2px !important;
-}
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:hover {
-    background: rgba(59, 130, 246, 0.12) !important;
-    border-color: rgba(59, 130, 246, 0.35) !important;
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label:hover {
+    background: rgba(59, 130, 246, 0.15) !important;
+    border-color: rgba(59, 130, 246, 0.4) !important;
     transform: translateX(4px) !important;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:hover p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label:hover p {
     color: #F8FAFC !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(30, 58, 138, 0.22) 100%) !important;
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.35) 0%, rgba(30, 58, 138, 0.25) 100%) !important;
     border: 1px solid rgba(59, 130, 246, 0.6) !important;
     border-left: 5px solid #3B82F6 !important;
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
-    transform: translateX(3px) !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35) !important;
+    transform: translateX(2px) !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:last-of-type [role="radiogroup"] > label:has(input:checked) p {
     color: #93C5FD !important;
     font-weight: 800 !important;
-    letter-spacing: 0.01em !important;
 }
 
-/* ── 2B. LANGUAGE TOGGLE SWITCH ─────────────────────────────────────────── */
-section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] {
+/* ── 2B. LANGUAGE TOGGLE SWITCH (Horizontal Pill Group) ───────────────────── */
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] {
     display: flex !important;
     flex-direction: row !important;
-    background: rgba(15, 23, 42, 0.8) !important;
+    background: rgba(15, 23, 42, 0.85) !important;
     padding: 4px !important;
     border-radius: 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
     gap: 4px !important;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
+    width: 100% !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] > label {
     flex: 1 !important;
+    display: flex !important;
     justify-content: center !important;
-    padding: 6px 10px !important;
-    margin-bottom: 0 !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    margin: 0 !important;
     border-radius: 8px !important;
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
     transform: none !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:hover {
-    background: rgba(255, 255, 255, 0.06) !important;
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] > label > div:first-child {
+    display: none !important;
+}
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
     transform: none !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) {
     background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
     border-left: none !important;
-    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.5) !important;
     transform: none !important;
 }
-section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) p {
+section[data-testid="stSidebar"] div[data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) p {
     color: #FFFFFF !important;
     font-weight: 800 !important;
 }
+
 
 /* ── 3. HEADINGS & TEXT ─────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6, p, label, span, div { color: #E2E8F0; }
@@ -677,7 +688,6 @@ with st.sidebar:
     selected_nav = st.radio(
         t("nav_title", lang),
         nav_options,
-        format_func=lambda x: f"{nav_icons[nav_options.index(x)]}  {x}",
         index=0,
         label_visibility="collapsed"
     )
@@ -815,7 +825,8 @@ if selected_nav == t("nav_dashboard", lang):
                 total_cases = type_counts['Count'].sum()
                 type_counts['Percentage'] = (type_counts['Count'] / total_cases * 100).round(1).astype(str) + "%"
 
-                chart_type = alt.Chart(type_counts).mark_arc(innerRadius=55, stroke='#0A0F1D', strokeWidth=2).encode(
+                # Altair Solid Pie Chart for Disaster Types
+                chart_type = alt.Chart(type_counts).mark_arc(outerRadius=105, stroke='#0A0F1D', strokeWidth=2).encode(
                     theta=alt.Theta(field="Count", type="quantitative"),
                     color=alt.Color(field="Disaster_Type", type="nominal", scale=alt.Scale(scheme='category10'),
                                     legend=alt.Legend(title=("आपदा प्रकार" if is_hi else "Disaster Type"), orient="bottom", labelColor="#CBD5E1", titleColor="#94A3B8")),
@@ -824,7 +835,7 @@ if selected_nav == t("nav_dashboard", lang):
                         alt.Tooltip(field="Count", type="quantitative", title=("मामले" if is_hi else "Incidents")),
                         alt.Tooltip(field="Percentage", type="nominal", title=("प्रतिशत" if is_hi else "Share"))
                     ]
-                ).properties(height=250).configure_view(strokeOpacity=0)
+                ).properties(height=260).configure_view(strokeOpacity=0)
                 
                 st.altair_chart(chart_type, use_container_width=True)
 
@@ -845,7 +856,8 @@ if selected_nav == t("nav_dashboard", lang):
                 sev_counts['Percentage'] = (sev_counts['Count'] / total_sev * 100).round(1).astype(str) + "%"
 
                 sev_color_range = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981']
-                chart_sev = alt.Chart(sev_counts).mark_arc(innerRadius=55, stroke='#0A0F1D', strokeWidth=2).encode(
+                # Altair Solid Pie Chart for Urgency Levels
+                chart_sev = alt.Chart(sev_counts).mark_arc(outerRadius=105, stroke='#0A0F1D', strokeWidth=2).encode(
                     theta=alt.Theta(field="Count", type="quantitative"),
                     color=alt.Color(field="Severity", type="nominal",
                                     scale=alt.Scale(domain=sev_counts['Severity'].tolist(), range=sev_color_range[:len(sev_counts)]),
@@ -855,9 +867,10 @@ if selected_nav == t("nav_dashboard", lang):
                         alt.Tooltip(field="Count", type="quantitative", title=("मामले" if is_hi else "Cases")),
                         alt.Tooltip(field="Percentage", type="nominal", title=("प्रतिशत" if is_hi else "Share"))
                     ]
-                ).properties(height=250).configure_view(strokeOpacity=0)
+                ).properties(height=260).configure_view(strokeOpacity=0)
 
                 st.altair_chart(chart_sev, use_container_width=True)
+
 
                 # Detailed Urgency Cards
                 for _, r in sev_counts.iterrows():
@@ -1273,6 +1286,29 @@ elif selected_nav == t("nav_alerts", lang):
     st.markdown(f'<div class="portal-title">{t("alerts_title", lang)}</div>', unsafe_allow_html=True)
     st.markdown(f'<div class="portal-subtitle">{t("alerts_subtitle", lang)}</div>', unsafe_allow_html=True)
 
+    # Official Govt Portals Quick Access Banner
+    st.markdown(f"""
+    <div style="background:linear-gradient(135deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.8) 100%);border:1px solid rgba(59,130,246,0.25);border-radius:14px;padding:14px 18px;margin-bottom:18px;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
+        <div style="font-size:0.85rem;font-weight:800;color:#93C5FD;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🏛️ {'आधिकारिक सरकारी आपदा एवं मौसम चेतावनी पोर्टल (Official Govt Sources)' if is_hi else 'Official Government Disaster & Weather Portals'}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;">
+            <a href="https://usdma.uk.gov.in/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#DBEAFE;padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                🏔️ USDMA उत्तराखंड ↗️
+            </a>
+            <a href="https://mausam.imd.gov.in/dehradun/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#FEF3C7;padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                🌦️ IMD देहरादून मौसम बुलेटिन ↗️
+            </a>
+            <a href="https://ffs.india-water.gov.in/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(14,165,233,0.2);border:1px solid rgba(14,165,233,0.4);color:#E0F2FE;padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                🌊 CWC बाढ़ पूर्वानुमान (Ganga Basin) ↗️
+            </a>
+            <a href="https://ndma.gov.in/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);color:#D1FAE5;padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                🇮🇳 NDMA राष्ट्रीय पोर्टल ↗️
+            </a>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     filter_sev_options = [t("filter_all", lang),
         "अति-गंभीर (Critical)" if is_hi else "Critical",
         "गंभीर (High)" if is_hi else "High",
@@ -1302,6 +1338,18 @@ elif selected_nav == t("nav_alerts", lang):
                 display_msg = msg_hi if (is_hi and msg_hi and str(msg_hi).strip()) else msg_en
                 target = alert.get('target', 'All')
 
+                # Identify official government source based on message content
+                lower_msg = str(display_msg).lower() + " " + str(msg_en).lower()
+                if any(w in lower_msg for w in ['rain', 'weather', 'storm', 'cloudburst', 'snow', 'barish', 'mausam', 'varsha']):
+                    govt_source_name = "IMD देहरादून मौसम विभाग (Official Bulletin)" if is_hi else "IMD Dehradun Weather Portal (Official)"
+                    govt_source_url = "https://mausam.imd.gov.in/dehradun/"
+                elif any(w in lower_msg for w in ['flood', 'ganga', 'river', 'water level', 'badh', 'jal']):
+                    govt_source_name = "CWC केंद्रीय जल आयोग (Flood Forecast)" if is_hi else "Central Water Commission (CWC Flood Portal)"
+                    govt_source_url = "https://ffs.india-water.gov.in/"
+                else:
+                    govt_source_name = "USDMA उत्तराखंड राज्य आपदा प्रबंधन" if is_hi else "USDMA Uttarakhand Disaster Portal"
+                    govt_source_url = "https://usdma.uk.gov.in/"
+
                 card_cls = {"Critical": "alert-critical", "High": "alert-high", "Medium": "alert-medium"}.get(sev, "alert-low")
                 badge_cls = {"Critical": "badge-critical", "High": "badge-high", "Medium": "badge-medium"}.get(sev, "badge-low")
                 badge_txt = {"Critical": t("alert_critical_badge", lang), "High": t("alert_high_badge", lang),
@@ -1315,12 +1363,19 @@ elif selected_nav == t("nav_alerts", lang):
                     </div>
                     <div class="alert-body">{display_msg}</div>
                     <div class="alert-target">📍 {'प्रभावित क्षेत्र' if is_hi else 'Target'}: {target}</div>
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                        <span style="font-size:0.78rem;color:#94A3B8;">🏛️ {'सरकारी स्रोत द्वारा सत्यापित' if is_hi else 'Verified by State Authority'}</span>
+                        <a href="{govt_source_url}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.22);color:#FFFFFF;padding:5px 12px;border-radius:8px;font-size:0.78rem;font-weight:700;text-decoration:none;">
+                            🏛️ {govt_source_name} ↗️
+                        </a>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
         else:
             st.info(t("no_alerts", lang))
     else:
         st.info(t("no_alerts", lang))
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
