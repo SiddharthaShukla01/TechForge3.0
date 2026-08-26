@@ -112,26 +112,86 @@ def insert_sample_data(reset_existing=True):
         )
 
         # -------------------------------------------------------------
-        # 3. RELIEF STOCKPILES (Bilingual)
+        # 3. RELIEF STOCKPILES & FOOD RESERVES (Bilingual across all 13 districts)
         # -------------------------------------------------------------
         resources = [
-            ("Food", "खाद्य सामग्री", "Dry Ration & Ready-to-Eat Packs", "सूखा राशन एवं तैयार भोजन पैकेट (5 किग्रा)", "Haridwar", "हरिद्वार", 1200, "Packets", "पैकेट", 1),
-            ("Medicine", "दवाइयां व चिकित्सा", "Emergency First Aid & Trauma Kits", "आपातकालीन प्राथमिक उपचार एवं ट्रॉमा किट", "Dehradun", "देहरादून", 650, "Kits", "किट", 1),
-            ("Equipment", "बचाव उपकरण", "Motorized Inflatable Rescue Boats", "मोटरयुक्त इन्फ्लेटेबल बचाव नौकाएं", "Chamoli", "चमोली", 14, "Boats", "नौकाएं", 1),
-            ("Food", "खाद्य सामग्री", "Packaged Drinking Water (20L Cans)", "पीने का स्वच्छ पानी (20 लीटर केन)", "Tehri Garhwal", "टिहरी गढ़वाल", 1500, "Cans", "केन", 1),
-            ("Equipment", "बचाव उपकरण", "Foldable Mountain Rescue Stretchers", "पर्वतीय फोल्डेबल रेस्क्यू स्ट्रेचर", "Uttarkashi", "उत्तरकाशी", 80, "Units", "स्ट्रेचर", 1),
-            ("Medicine", "दवाइयां व चिकित्सा", "Portable Oxygen Cylinders", "पोर्टेबल मेडिकल ऑक्सीजन सिलेंडर", "Haridwar", "हरिद्वार", 50, "Cylinders", "सिलेंडर", 1),
-            ("Equipment", "बचाव उपकरण", "High-Power Diesel Generators", "हाई-पावर बैकअप डीजल जनरेटर", "Rudraprayag", "रुद्रप्रयाग", 20, "Units", "यूनिट", 1),
-            ("Equipment", "बचाव उपकरण", "Hydraulic Cutters & Heavy Torches", "हाइड्रोलिक कटर व शक्तिशाली सर्चलाइट", "Chamoli", "चमोली", 40, "Sets", "सेट", 1),
-            ("Food", "खाद्य सामग्री", "Baby Food & Essential Milk Powder", "शिशु आहार एवं आवश्यक सूखा दूध पाउडर", "Pithoragarh", "पिथौरागढ़", 350, "Kits", "किट", 1),
-            ("Medicine", "दवाइयां व चिकित्सा", "Anti-Venom & Water Purification Tablets", "एंटी-वेनम व क्लोरीन पानी शुद्धिकरण गोलियां", "Pauri Garhwal", "पौड़ी गढ़वाल", 2500, "Strips", "स्ट्रिप", 1),
-            ("Equipment", "बचाव उपकरण", "Extreme Cold Weather Blankets & Tents", "शीतकालीन वाटरप्रूफ गर्म कंबल व टेंट", "Uttarkashi", "उत्तरकाशी", 900, "Sets", "सेट", 1),
-            ("Equipment", "बचाव उपकरण", "Satellite Phones & VHF Radios", "सैटेलाइट फोन व वायरलेस रेडियो सेट", "Rudraprayag", "रुद्रप्रयाग", 25, "Devices", "डिवाइस", 1),
-            ("Food", "खाद्य सामग्री", "Community Kitchen Grain Bags (Wheat/Rice 50kg)", "सामुदायिक रसोई अनाज बोरी (गेहूं/चावल 50 किग्रा)", "Nainital", "नैनीताल", 400, "Bags", "बोरी", 1),
-            ("Medicine", "दवाइयां व चिकित्सा", "Trauma & Burn Care Emergency Packs", "गंभीर घाव व जलने की आपातकालीन दवा किट", "Almora", "अल्मोड़ा", 200, "Packs", "पैक", 1),
-            ("Equipment", "बचाव उपकरण", "Snow Clearing Heavy Shovels & Chains", "बर्फ हटाने के भारी फावड़े व चेन सेट", "Bageshwar", "बागेश्वर", 120, "Units", "इकाइयां", 1),
-            ("Food", "खाद्य सामग्री", "High-Energy Biscuits & ORS Packets", "ऊर्जा बिस्कुट एवं ओआरएस घोल पैकेट", "Champawat", "चंपावत", 3000, "Packets", "पैकेट", 1),
-            ("Medicine", "दवाइयां व चिकित्सा", "Emergency Intravenous (IV) Fluid Kits", "आपातकालीन ड्रिप एवं ग्लूकोज आईवी किट", "Udham Singh Nagar", "उधम सिंह नगर", 800, "Boxes", "बॉक्स", 1)
+            # Dehradun
+            ("Food", "खाद्य सामग्री (Food)", "Emergency Family Dry Ration Kits (5kg Atta, Rice, Dal, Oil, Salt)", "आपातकालीन सूखा राशन किट (5 किग्रा आटा, चावल, दाल, तेल, नमक)", "Dehradun", "देहरादून", 3500, "Kits", "किट", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Ready-to-Eat Cooked MRE Meal Packets (24h shelf)", "तैयार भोजन पैकेट / एमआरई राशन (24 घंटे सुरक्षित)", "Dehradun", "देहरादून", 5000, "Packs", "पैकेट", 1),
+            ("Water", "पेयजल (Drinking Water)", "Packaged Drinking Water (20L Cans)", "सीलबंद सुरक्षित पेयजल (20 लीटर कैन)", "Dehradun", "देहरादून", 2800, "Cans", "कैन", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Emergency First Aid & Trauma Response Kits", "आपातकालीन प्राथमिक उपचार एवं ट्रॉमा रिस्पॉन्स किट", "Dehradun", "देहरादून", 1200, "Kits", "किट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "High-Capacity Diesel Generators (15kVA)", "हाई-कैपेसिटी बैकअप डीजल जनरेटर (15kVA)", "Dehradun", "देहरादून", 35, "Units", "यूनिट", 1),
+
+            # Haridwar
+            ("Food", "खाद्य सामग्री (Food)", "Dry Ration & Community Kitchen Grain Bags (Wheat/Rice 50kg)", "सामुदायिक रसोई अनाज बोरी (गेहूं व चावल 50 किग्रा)", "Haridwar", "हरिद्वार", 1800, "Bags", "बोरी", 1),
+            ("Food", "खाद्य सामग्री (Food)", "High-Energy Protein Biscuits & Glucose Packs", "उच्च-ऊर्जा प्रोटीन बिस्कुट एवं ग्लूकोज पैकेट", "Haridwar", "हरिद्वार", 6000, "Packets", "पैकेट", 1),
+            ("Water", "पेयजल (Drinking Water)", "Chlorine Water Purification Tablets (10,000L)", "क्लोरीन जल शुद्धिकरण गोलियां (10,000 लीटर क्षमता)", "Haridwar", "हरिद्वार", 4500, "Strips", "स्ट्रिप", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Portable Medical Oxygen Cylinders", "पोर्टेबल मेडिकल ऑक्सीजन सिलेंडर", "Haridwar", "हरिद्वार", 120, "Cylinders", "सिलेंडर", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Motorized Inflatable Flood Rescue Boats (8-person)", "मोटरयुक्त इन्फ्लेटेबल बाढ़ बचाव बोट (8 सीटर)", "Haridwar", "हरिद्वार", 25, "Boats", "बोट", 1),
+
+            # Chamoli
+            ("Food", "खाद्य सामग्री (Food)", "High-Altitude Emergency Ration Packs (Self-Heating)", "उच्च-पर्वतीय स्व-गर्म होने वाले भोजन पैकेट (MRE)", "Chamoli", "चमोली", 2200, "Packs", "पैकेट", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Infant Milk Formula & Baby Food Cartons", "शिशु आहार एवं आवश्यक सूखा दूध पाउडर कार्टन", "Chamoli", "चमोली", 850, "Boxes", "डिब्बे", 1),
+            ("Water", "पेयजल (Drinking Water)", "Mobile Gravity Water Filter Units", "पोर्टेबल ग्रेविटी वाटर फिल्टर यूनिट्स", "Chamoli", "चमोली", 140, "Units", "यूनिट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Mountain Rescue Hydraulic Cutters & Spreaders", "पर्वतीय मलबा कटर व हाइड्रोलिक रेस्क्यू उपकरण", "Chamoli", "चमोली", 45, "Sets", "सेट", 1),
+            ("Shelter", "आश्रय व गर्म कपड़े (Shelter)", "High-Altitude Thermal Sleeping Bags & Blankets", "अत्यधिक ठंड रोधी थर्मल स्लीपिंग बैग व कंबल", "Chamoli", "चमोली", 2000, "Sets", "सेट", 1),
+
+            # Tehri Garhwal
+            ("Food", "खाद्य सामग्री (Food)", "Emergency Family Dry Ration Kits (5kg)", "आपातकालीन सूखा राशन किट (5 किग्रा)", "Tehri Garhwal", "टिहरी गढ़वाल", 1600, "Kits", "किट", 1),
+            ("Water", "पेयजल (Drinking Water)", "Packaged Drinking Water (20L Cans)", "पीने का स्वच्छ पानी (20 लीटर कैन)", "Tehri Garhwal", "टिहरी गढ़वाल", 1500, "Cans", "कैन", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Anti-Venom & Emergency Trauma Kits", "एंटी-वेनम एवं आपातकालीन ट्रॉमा दवा किट", "Tehri Garhwal", "टिहरी गढ़वाल", 600, "Kits", "किट", 1),
+            ("Shelter", "आश्रय व गर्म कपड़े (Shelter)", "Waterproof Heavy-Duty Tarpaulin Tents", "वाटरप्रूफ हेवी-ड्यूटी तिरपाल व टेंट", "Tehri Garhwal", "टिहरी गढ़वाल", 750, "Tents", "टेंट", 1),
+
+            # Uttarkashi
+            ("Food", "खाद्य सामग्री (Food)", "Pilgrim Emergency Ready-to-Eat Food Packs", "यात्री आपातकालीन रेडी-टू-ईट भोजन पैकेट", "Uttarkashi", "उत्तरकाशी", 2400, "Packs", "पैकेट", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Infant Milk Powder & Nutrition Biscuits", "शिशु सूखा दूध एवं पोषण बिस्कुट", "Uttarkashi", "उत्तरकाशी", 700, "Boxes", "डिब्बे", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Portable Oxygen Concentrators & Kits", "पोर्टेबल ऑक्सीजन कंसंट्रेटर व फर्स्ट एड", "Uttarkashi", "उत्तरकाशी", 65, "Units", "यूनिट", 1),
+            ("Shelter", "आश्रय व गर्म कपड़े (Shelter)", "Extreme Cold Weather Blankets & Tents", "शीतकालीन वाटरप्रूफ गर्म कंबल व टेंट", "Uttarkashi", "उत्तरकाशी", 1500, "Sets", "सेट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Foldable Mountain Rescue Stretchers & Ropes", "पर्वतीय फोल्डेबल रेस्क्यू स्ट्रेचर व रोप सेट", "Uttarkashi", "उत्तरकाशी", 110, "Units", "स्ट्रेचर", 1),
+
+            # Rudraprayag
+            ("Food", "खाद्य सामग्री (Food)", "Kedarnath Route Emergency Dry Ration Kits", "केदारनाथ मार्ग आपातकालीन सूखा राशन किट", "Rudraprayag", "रुद्रप्रयाग", 1900, "Kits", "किट", 1),
+            ("Water", "पेयजल (Drinking Water)", "Packaged Spring Water Cans (20L)", "सीलबंद स्वच्छ पेयजल कैन (20 ली.)", "Rudraprayag", "रुद्रप्रयाग", 1800, "Cans", "कैन", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "High-Altitude Sickness & Trauma Meds", "हाई-एल्टीट्यूड सिकनेस व आपातकालीन दवाएं", "Rudraprayag", "रुद्रप्रयाग", 750, "Kits", "किट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Satellite Phones & VHF Wireless Radio Sets", "सैटेलाइट फोन व वायरलेस रेडियो सेट", "Rudraprayag", "रुद्रप्रयाग", 35, "Devices", "डिवाइस", 1),
+
+            # Pauri Garhwal
+            ("Food", "खाद्य सामग्री (Food)", "Community Grain Bags (Wheat/Rice 50kg)", "सामुदायिक अनाज बोरी (गेहूं व चावल 50 किग्रा)", "Pauri Garhwal", "पौड़ी गढ़वाल", 950, "Bags", "बोरी", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Anti-Venom & Water Purification Tablets", "एंटी-वेनम व क्लोरीन पानी शुद्धिकरण गोलियां", "Pauri Garhwal", "पौड़ी गढ़वाल", 3500, "Strips", "स्ट्रिप", 1),
+            ("Shelter", "आश्रय व गर्म कपड़े (Shelter)", "Emergency Relief Blankets & Mats", "आपातकालीन राहत कंबल व चटाई सेट", "Pauri Garhwal", "पौड़ी गढ़वाल", 1200, "Sets", "सेट", 1),
+
+            # Pithoragarh
+            ("Food", "खाद्य सामग्री (Food)", "Border Area Emergency Ration Packs (Ready-to-Eat)", "सीमावर्ती क्षेत्र रेडी-टू-ईट भोजन पैकेट", "Pithoragarh", "पिथौरागढ़", 2100, "Packs", "पैकेट", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Baby Food & Essential Nutrition Formula", "शिशु आहार एवं आवश्यक पोषण पाउडर", "Pithoragarh", "पिथौरागढ़", 550, "Kits", "किट", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Mountain Trauma & Fracture Splint Kits", "पर्वतीय ट्रॉमा व फ्रैक्चर स्प्लिंट किट", "Pithoragarh", "पिथौरागढ़", 450, "Kits", "किट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Solar Rechargeable Heavy Searchlights", "सोलर रिचार्जेबल शक्तिशाली सर्चलाइट", "Pithoragarh", "पिथौरागढ़", 180, "Units", "यूनिट", 1),
+
+            # Bageshwar
+            ("Food", "खाद्य सामग्री (Food)", "Dry Ration Emergency Kits (Atta, Rice, Dal)", "सूखा राशन आपातकालीन किट (आटा, चावल, दाल)", "Bageshwar", "बागेश्वर", 1100, "Kits", "किट", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Snow Clearing Heavy Shovels & Chains", "बर्फ हटाने के भारी फावड़े व चेन सेट", "Bageshwar", "बागेश्वर", 160, "Units", "इकाइयां", 1),
+            ("Shelter", "आश्रय व गर्म कपड़े (Shelter)", "Thermal Blankets & Windproof Tents", "थर्मल कंबल व हवा-रोधी टेंट", "Bageshwar", "बागेश्वर", 850, "Sets", "सेट", 1),
+
+            # Almora
+            ("Food", "खाद्य सामग्री (Food)", "Ready-to-Eat Meals & Energy Bars", "तैयार भोजन पैकेट एवं एनर्जी बार", "Almora", "अल्मोड़ा", 1400, "Packs", "पैकेट", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Burn Care & Trauma Emergency Packs", "गंभीर घाव व जलने की आपातकालीन दवा किट", "Almora", "अल्मोड़ा", 350, "Packs", "पैक", 1),
+            ("Water", "पेयजल (Drinking Water)", "20L Drinking Water Cans", "20 लीटर स्वच्छ पेयजल कैन", "Almora", "अल्मोड़ा", 1100, "Cans", "कैन", 1),
+
+            # Champawat
+            ("Food", "खाद्य सामग्री (Food)", "High-Energy Biscuits & ORS Drink Packs", "ऊर्जा बिस्कुट एवं ओआरएस घोल पैकेट", "Champawat", "चंपावत", 4000, "Packets", "पैकेट", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Dry Ration Kits (5kg Family Packs)", "सूखा राशन किट (5 किग्रा परिवार पैक)", "Champawat", "चंपावत", 900, "Kits", "किट", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Water Purification Tablets (Chlorine)", "जल शुद्धिकरण क्लोरीन गोलियां", "Champawat", "चंपावत", 2200, "Strips", "स्ट्रिप", 1),
+
+            # Nainital
+            ("Food", "खाद्य सामग्री (Food)", "Community Kitchen Grain Bags (Wheat/Rice 50kg)", "सामुदायिक रसोई अनाज बोरी (गेहूं/चावल 50 किग्रा)", "Nainital", "नैनीताल", 850, "Bags", "बोरी", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Ready-to-Eat Food Packets (Cooked MRE)", "तैयार भोजन पैकेट (पका हुआ MRE)", "Nainital", "नैनीताल", 3000, "Packs", "पैकेट", 1),
+            ("Water", "पेयजल (Drinking Water)", "Packaged Drinking Water (20L Cans)", "सीलबंद पेयजल (20 लीटर कैन)", "Nainital", "नैनीताल", 2400, "Cans", "कैन", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Emergency Trauma Care & Dressing Kits", "आपातकालीन ट्रॉमा केयर व ड्रेसिंग किट", "Nainital", "नैनीताल", 800, "Kits", "किट", 1),
+
+            # Udham Singh Nagar
+            ("Food", "खाद्य सामग्री (Food)", "Bulk Grain Bags (Rice & Wheat 50kg Bags)", "थोक अनाज बोरी (चावल व गेहूं 50 किग्रा)", "Udham Singh Nagar", "उधम सिंह नगर", 2500, "Bags", "बोरी", 1),
+            ("Food", "खाद्य सामग्री (Food)", "Packaged Ready-to-Eat Meals & Biscuits", "सीलबंद रेडी-टू-ईट भोजन व बिस्कुट", "Udham Singh Nagar", "उधम सिंह नगर", 4500, "Packs", "पैकेट", 1),
+            ("Medicine", "दवाइयां व चिकित्सा (Medical)", "Emergency Intravenous (IV) Fluid Boxes", "आपातकालीन ड्रिप एवं ग्लूकोज आईवी किट", "Udham Singh Nagar", "उधम सिंह नगर", 1200, "Boxes", "बॉक्स", 1),
+            ("Equipment", "बचाव उपकरण (Rescue)", "Inflatable Rescue Motorboats (Plains)", "बाढ़ राहत मोटरयुक्त रबर बोट", "Udham Singh Nagar", "उधम सिंह नगर", 18, "Boats", "बोट", 1)
         ]
         c.executemany(
             """
@@ -140,6 +200,7 @@ def insert_sample_data(reset_existing=True):
             """,
             resources
         )
+
 
         # -------------------------------------------------------------
         # 4. DISASTERS & GROUND INCIDENTS (Bilingual)

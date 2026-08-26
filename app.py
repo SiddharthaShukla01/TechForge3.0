@@ -1,10 +1,13 @@
 import streamlit as st
 import pandas as pd
 import os
+import urllib.parse
+import altair as alt
 from datetime import datetime
 import weather as wx
 
 os.makedirs("uploads", exist_ok=True)
+
 
 from database import (
     create_tables, add_disaster, add_custom_alert, get_all_disasters,
@@ -808,15 +811,67 @@ if selected_nav == t("nav_dashboard", lang):
             with tab_type:
                 type_col = 'type_hi' if is_hi and 'type_hi' in df_disasters.columns else 'type'
                 type_counts = df_disasters[type_col].value_counts().reset_index()
-                type_counts.columns = ['आपदा' if is_hi else 'Type', 'संख्या' if is_hi else 'Count']
-                st.bar_chart(type_counts.set_index('आपदा' if is_hi else 'Type'), color="#EF4444")
+                type_counts.columns = ['Disaster_Type', 'Count']
+                total_cases = type_counts['Count'].sum()
+                type_counts['Percentage'] = (type_counts['Count'] / total_cases * 100).round(1).astype(str) + "%"
+
+                chart_type = alt.Chart(type_counts).mark_arc(innerRadius=55, stroke='#0A0F1D', strokeWidth=2).encode(
+                    theta=alt.Theta(field="Count", type="quantitative"),
+                    color=alt.Color(field="Disaster_Type", type="nominal", scale=alt.Scale(scheme='category10'),
+                                    legend=alt.Legend(title=("आपदा प्रकार" if is_hi else "Disaster Type"), orient="bottom", labelColor="#CBD5E1", titleColor="#94A3B8")),
+                    tooltip=[
+                        alt.Tooltip(field="Disaster_Type", type="nominal", title=("आपदा" if is_hi else "Type")),
+                        alt.Tooltip(field="Count", type="quantitative", title=("मामले" if is_hi else "Incidents")),
+                        alt.Tooltip(field="Percentage", type="nominal", title=("प्रतिशत" if is_hi else "Share"))
+                    ]
+                ).properties(height=250).configure_view(strokeOpacity=0)
+                
+                st.altair_chart(chart_type, use_container_width=True)
+
+                # Detailed Breakdown
+                for _, r in type_counts.iterrows():
+                    st.markdown(f"""
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;margin-bottom:4px;background:rgba(30,41,59,0.45);border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:0.85rem;color:#F1F5F9;font-weight:600;">{r['Disaster_Type']}</span>
+                        <span style="font-size:0.82rem;"><b style="color:#60A5FA;">{r['Count']}</b> <span style="color:#64748B;">({r['Percentage']})</span></span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
             with tab_sev:
                 sev_col = 'severity_hi' if is_hi and 'severity_hi' in df_disasters.columns else 'severity'
                 sev_counts = df_disasters[sev_col].value_counts().reset_index()
-                sev_counts.columns = ['गंभीरता' if is_hi else 'Severity', 'संख्या' if is_hi else 'Count']
-                st.bar_chart(sev_counts.set_index('गंभीरता' if is_hi else 'Severity'), color="#F59E0B")
+                sev_counts.columns = ['Severity', 'Count']
+                total_sev = sev_counts['Count'].sum()
+                sev_counts['Percentage'] = (sev_counts['Count'] / total_sev * 100).round(1).astype(str) + "%"
+
+                sev_color_range = ['#EF4444', '#F59E0B', '#3B82F6', '#10B981']
+                chart_sev = alt.Chart(sev_counts).mark_arc(innerRadius=55, stroke='#0A0F1D', strokeWidth=2).encode(
+                    theta=alt.Theta(field="Count", type="quantitative"),
+                    color=alt.Color(field="Severity", type="nominal",
+                                    scale=alt.Scale(domain=sev_counts['Severity'].tolist(), range=sev_color_range[:len(sev_counts)]),
+                                    legend=alt.Legend(title=("गंभीरता स्तर" if is_hi else "Urgency Level"), orient="bottom", labelColor="#CBD5E1", titleColor="#94A3B8")),
+                    tooltip=[
+                        alt.Tooltip(field="Severity", type="nominal", title=("स्तर" if is_hi else "Severity")),
+                        alt.Tooltip(field="Count", type="quantitative", title=("मामले" if is_hi else "Cases")),
+                        alt.Tooltip(field="Percentage", type="nominal", title=("प्रतिशत" if is_hi else "Share"))
+                    ]
+                ).properties(height=250).configure_view(strokeOpacity=0)
+
+                st.altair_chart(chart_sev, use_container_width=True)
+
+                # Detailed Urgency Cards
+                for _, r in sev_counts.iterrows():
+                    s_name = str(r['Severity'])
+                    pill_color = "#EF4444" if ("Critical" in s_name or "अति-गंभीर" in s_name) else ("#F59E0B" if ("High" in s_name or "गंभीर" in s_name) else ("#3B82F6" if ("Medium" in s_name or "मध्यम" in s_name) else "#10B981"))
+                    st.markdown(f"""
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;margin-bottom:5px;background:rgba(30,41,59,0.45);border-radius:8px;border-left:4px solid {pill_color};border-top:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:0.85rem;color:#F1F5F9;font-weight:700;">{s_name}</span>
+                        <span style="font-size:0.82rem;"><b style="color:{pill_color};">{r['Count']}</b> <span style="color:#64748B;">({r['Percentage']})</span></span>
+                    </div>
+                    """, unsafe_allow_html=True)
         else:
             st.info("No data available to chart.")
+
 
     st.markdown("<hr class='section-divider'>", unsafe_allow_html=True)
 
@@ -1017,6 +1072,12 @@ elif selected_nav == t("nav_find_help", lang):
                 s_name = s['name_hi'] if (is_hi and pd.notnull(s.get('name_hi'))) else s['name']
                 dist_label = s['district_hi'] if (is_hi and pd.notnull(s.get('district_hi'))) else s['district']
 
+                # Google Maps Link
+                if pd.notnull(s.get('latitude')) and pd.notnull(s.get('longitude')):
+                    gmaps_url = f"https://www.google.com/maps/search/?api=1&query={s['latitude']},{s['longitude']}"
+                else:
+                    gmaps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(str(s['name']) + ' ' + str(s['district']) + ' Uttarakhand')}"
+
                 if avail == 0:
                     badge_cls, badge_txt = "avail-full", ("पूर्ण भर गया" if is_hi else "Full")
                 elif occ_ratio > 0.75:
@@ -1029,7 +1090,11 @@ elif selected_nav == t("nav_find_help", lang):
                 <div class="resource-card">
                     <div class="resource-card-header">
                         <div>
-                            <div class="resource-name">🏠 {s_name}</div>
+                            <div class="resource-name">
+                                <a href="{gmaps_url}" target="_blank" style="color:#F1F5F9;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                                    🏠 {s_name} <span style="font-size:0.75rem;color:#60A5FA;">↗️</span>
+                                </a>
+                            </div>
                             <div class="resource-district">📍 {dist_label}</div>
                         </div>
                         <span class="avail-badge {badge_cls}">{badge_txt}</span>
@@ -1040,6 +1105,11 @@ elif selected_nav == t("nav_find_help", lang):
                     <div class="res-stats-row">
                         <span>{'भरे हुए' if is_hi else 'Occupied'}: <b>{occ}/{cap}</b></span>
                         <span>📞 <span style="color:#93C5FD;font-family:monospace;">{s['contact']}</span></span>
+                    </div>
+                    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                        <a href="{gmaps_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.18);border:1px solid rgba(59,130,246,0.4);color:#93C5FD;padding:6px 14px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                            🗺️ {'गूगल मैप्स पर लोकेशन व दिशा-निर्देश देखें' if is_hi else 'View Shelter on Google Maps'} ↗️
+                        </a>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1056,6 +1126,12 @@ elif selected_nav == t("nav_find_help", lang):
                 h_name = h['name_hi'] if (is_hi and pd.notnull(h.get('name_hi'))) else h['name']
                 dist_label = h['district_hi'] if (is_hi and pd.notnull(h.get('district_hi'))) else h['district']
 
+                # Google Maps Link
+                if pd.notnull(h.get('latitude')) and pd.notnull(h.get('longitude')):
+                    gmaps_url_h = f"https://www.google.com/maps/search/?api=1&query={h['latitude']},{h['longitude']}"
+                else:
+                    gmaps_url_h = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(str(h['name']) + ' ' + str(h['district']) + ' Uttarakhand')}"
+
                 if avail_beds == 0:
                     badge_cls, badge_txt = "avail-full", ("बेड उपलब्ध नहीं" if is_hi else "No Beds")
                 elif avail_beds < 10:
@@ -1069,7 +1145,11 @@ elif selected_nav == t("nav_find_help", lang):
                 <div class="resource-card">
                     <div class="resource-card-header">
                         <div>
-                            <div class="resource-name">🏥 {h_name}</div>
+                            <div class="resource-name">
+                                <a href="{gmaps_url_h}" target="_blank" style="color:#F1F5F9;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                                    🏥 {h_name} <span style="font-size:0.75rem;color:#60A5FA;">↗️</span>
+                                </a>
+                            </div>
                             <div class="resource-district">📍 {dist_label}</div>
                         </div>
                         <span class="avail-badge {badge_cls}">{badge_txt}</span>
@@ -1081,6 +1161,11 @@ elif selected_nav == t("nav_find_help", lang):
                         <span>{'खाली बेड' if is_hi else 'Free Beds'}: <b>{avail_beds}/{total_beds}</b></span>
                         <span>📞 <span style="color:#93C5FD;font-family:monospace;">{h['contact']}</span></span>
                     </div>
+                    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                        <a href="{gmaps_url_h}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.18);border:1px solid rgba(59,130,246,0.4);color:#93C5FD;padding:6px 14px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
+                            🗺️ {'गूगल मैप्स पर अस्पताल व मार्ग देखें' if is_hi else 'Navigate to Hospital on Google Maps'} ↗️
+                        </a>
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
         else:
@@ -1089,35 +1174,96 @@ elif selected_nav == t("nav_find_help", lang):
     with tab_r:
         df_r = get_resources_by_district(chosen_district)
         if not df_r.empty:
-            rows_html = ""
-            for _, row in df_r.iterrows():
+            # Stockpile Summary Cards
+            food_items = df_r[df_r['type'].str.contains('Food', case=False, na=False)]
+            water_items = df_r[df_r['type'].str.contains('Water', case=False, na=False)]
+            med_items = df_r[df_r['type'].str.contains('Medicine', case=False, na=False)]
+            eq_items = df_r[df_r['type'].str.contains('Equipment|Shelter', case=False, na=False)]
+
+            st.markdown(f"#### 🍞 {'खाद्य सामग्री व आपातकालीन राहत भंडार' if is_hi else 'Food & Emergency Relief Stockpile Overview'}")
+            
+            sc1, sc2, sc3, sc4 = st.columns(4)
+            with sc1:
+                food_qty = food_items['quantity'].sum() if not food_items.empty else 0
+                st.metric("🍞 " + ("राशन व भोजन किट" if is_hi else "Food & Ration Packs"), f"{food_qty:,}")
+            with sc2:
+                water_qty = water_items['quantity'].sum() if not water_items.empty else 0
+                st.metric("💧 " + ("पेयजल / वाटर सप्लाई" if is_hi else "Drinking Water Supply"), f"{water_qty:,}")
+            with sc3:
+                med_qty = med_items['quantity'].sum() if not med_items.empty else 0
+                st.metric("💊 " + ("चिकित्सा व फर्स्ट-एड" if is_hi else "Medical & Trauma Kits"), f"{med_qty:,}")
+            with sc4:
+                eq_qty = eq_items['quantity'].sum() if not eq_items.empty else 0
+                st.metric("🏕️ " + ("टेंट, कंबल व उपकरण" if is_hi else "Tents & Rescue Gear"), f"{eq_qty:,}")
+
+            st.markdown("---")
+
+            # Supply Filter Tabs
+            cat_list = [t("filter_all", lang), "🍞 " + ("खाद्य सामग्री (Food)" if is_hi else "Food & Rations"), "💧 " + ("पेयजल (Water)" if is_hi else "Drinking Water"), "💊 " + ("दवाइयां (Medical)" if is_hi else "Medical Supplies"), "🏕️ " + ("आश्रय व टेंट (Shelter)" if is_hi else "Shelter & Tents"), "🚤 " + ("बचाव उपकरण (Rescue Gear)" if is_hi else "Rescue Gear")]
+            sel_cat = st.selectbox("📦 " + ("सामग्री श्रेणी चुनें (Filter Stockpile Category):" if is_hi else "Filter Stockpile Category:"), cat_list)
+
+            filtered_r = df_r.copy()
+            if "Food" in sel_cat or "खाद्य" in sel_cat:
+                filtered_r = filtered_r[filtered_r['type'].str.contains('Food', case=False, na=False)]
+            elif "Water" in sel_cat or "पेयजल" in sel_cat:
+                filtered_r = filtered_r[filtered_r['type'].str.contains('Water', case=False, na=False)]
+            elif "Medical" in sel_cat or "दवाइयां" in sel_cat:
+                filtered_r = filtered_r[filtered_r['type'].str.contains('Medicine', case=False, na=False)]
+            elif "Shelter" in sel_cat or "आश्रय" in sel_cat:
+                filtered_r = filtered_r[filtered_r['type'].str.contains('Shelter', case=False, na=False)]
+            elif "Rescue" in sel_cat or "बचाव" in sel_cat:
+                filtered_r = filtered_r[filtered_r['type'].str.contains('Equipment', case=False, na=False)]
+
+            # Render Cards for each resource
+            depot_maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(str(chosen_district) + ' District Disaster Food Warehouse Uttarakhand')}"
+
+            for _, row in filtered_r.iterrows():
                 rtype = row['type_hi'] if is_hi and pd.notnull(row.get('type_hi')) else row['type']
                 rname = row['name_hi'] if is_hi and pd.notnull(row.get('name_hi')) else row['name']
                 runit = row['unit_hi'] if is_hi and pd.notnull(row.get('unit_hi')) else row['unit']
                 rdist = row['district_hi'] if is_hi and pd.notnull(row.get('district_hi')) else row['district']
-                rows_html += f"""
-                <tr>
-                    <td><span class="supply-type-badge">{rtype}</span></td>
-                    <td>{rname}</td>
-                    <td><b>{row['quantity']}</b></td>
-                    <td>{runit}</td>
-                    <td>{rdist}</td>
-                </tr>"""
-            qty_col = t("col_res_qty", lang)
-            st.markdown(f"""
-            <table class="supply-table">
-                <thead><tr>
-                    <th>{t('col_res_type', lang)}</th>
-                    <th>{t('col_res_name', lang)}</th>
-                    <th>{qty_col}</th>
-                    <th>{t('col_res_unit', lang)}</th>
-                    <th>{t('col_res_district', lang)}</th>
-                </tr></thead>
-                <tbody>{rows_html}</tbody>
-            </table>
-            """, unsafe_allow_html=True)
+                rqty = row['quantity']
+
+                # Status Badge
+                if rqty > 1000:
+                    status_badge = '<span style="background:rgba(16,185,129,0.2);color:#34D399;padding:3px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">🟢 ' + ('पर्याप्त भंडार (Ample Reserve)' if is_hi else 'Ample Reserve') + '</span>'
+                elif rqty > 200:
+                    status_badge = '<span style="background:rgba(59,130,246,0.2);color:#93C5FD;padding:3px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">🟡 ' + ('संतोषजनक भंडार (Adequate)' if is_hi else 'Adequate Stock') + '</span>'
+                else:
+                    status_badge = '<span style="background:rgba(245,158,11,0.2);color:#FCD34D;padding:3px 10px;border-radius:6px;font-size:0.75rem;font-weight:700;">🟠 ' + ('सीमित भंडार (Active Dispatch)' if is_hi else 'Active Dispatch') + '</span>'
+
+                with st.container(border=True):
+                    st.markdown(f"""
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+                        <div>
+                            <span style="font-size:0.75rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.04em;">🏷️ {rtype}</span>
+                            <div style="font-size:1.05rem;font-weight:800;color:#F8FAFC;margin-top:2px;">{rname}</div>
+                            <div style="font-size:0.8rem;color:#64748B;margin-top:2px;">📍 {rdist} &nbsp;|&nbsp; 🏢 {'जिला आपदा रसद गोदाम' if is_hi else 'District Food & Relief Depot'}</div>
+                        </div>
+                        <div>
+                            {status_badge}
+                            <div style="font-size:1.3rem;font-weight:900;color:#38BDF8;text-align:right;margin-top:4px;">{rqty:,} <span style="font-size:0.85rem;color:#94A3B8;">{runit}</span></div>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                        <span style="font-size:0.78rem;color:#94A3B8;">📦 {'15 से 30 दिन का आपातकालीन आरक्षित स्टॉक' if is_hi else '15-30 days emergency buffer stock'}</span>
+                        <a href="{depot_maps_url}" target="_blank" style="font-size:0.78rem;color:#60A5FA;text-decoration:none;font-weight:700;">🗺️ {'गोदाम लोकेशन (Google Maps)' if is_hi else 'View Depot on Google Maps'} ↗️</a>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # Table view
+            with st.expander("📑 " + ("विस्तृत रसद व स्टॉक सूची देखें (Complete Stockpile Manifest)" if is_hi else "View Complete Stockpile Manifest")):
+                display_stock = pd.DataFrame({
+                    t("col_res_type", lang): filtered_r['type_hi'].fillna(filtered_r['type']) if is_hi else filtered_r['type'],
+                    t("col_res_name", lang): filtered_r['name_hi'].fillna(filtered_r['name']) if is_hi else filtered_r['name'],
+                    t("col_res_qty", lang): filtered_r['quantity'],
+                    t("col_res_unit", lang): filtered_r['unit_hi'].fillna(filtered_r['unit']) if is_hi else filtered_r['unit'],
+                    t("col_res_district", lang): filtered_r['district_hi'].fillna(filtered_r['district']) if is_hi else filtered_r['district']
+                })
+                st.dataframe(display_stock, use_container_width=True, hide_index=True)
         else:
             st.warning(t("no_supplies", lang))
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
