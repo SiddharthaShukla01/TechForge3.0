@@ -1172,8 +1172,8 @@ elif selected_nav == t("nav_suggestions", lang):
 # 6. WEATHER
 # ─────────────────────────────────────────────────────────────────────────────
 elif selected_nav == t("nav_weather", lang):
-    st.markdown(f'<div class="portal-title">{t("weather_title", lang)}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="portal-subtitle">{t("weather_subtitle", lang)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="portal-title">{t("weather_page_title", lang)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="portal-subtitle">{t("weather_page_subtitle", lang)}</div>', unsafe_allow_html=True)
 
     wx_tab1, wx_tab2, wx_tab3 = st.tabs([
         t("weather_current_conditions", lang),
@@ -1201,31 +1201,30 @@ elif selected_nav == t("nav_weather", lang):
                 for a in alerts:
                     msg = a["message_hi"] if is_hi else a["message_en"]
                     sev = a["severity"]
-                    cls = {"Critical": "wx-alert-critical", "High": "wx-alert-high"}.get(sev, "wx-alert-medium")
                     icon = {"Critical": "🚨", "High": "⚠️"}.get(sev, "🟡")
                     badge = {"Critical": t("weather_critical_badge", lang), "High": t("weather_high_badge", lang)}.get(sev, t("weather_medium_badge", lang))
-                    st.markdown(f'<div class="{cls}">{icon} <b>{badge}</b><br>{msg}</div>', unsafe_allow_html=True)
+                    alert_text = f"{icon} **{badge}**\n\n{msg}"
+                    if sev == "Critical":
+                        st.error(alert_text)
+                    elif sev == "High":
+                        st.warning(alert_text)
+                    else:
+                        st.info(alert_text)
             else:
                 st.success(t("weather_no_alerts", lang))
 
-            st.markdown("<hr class='section-divider'>", unsafe_allow_html=True)
+            st.markdown("---")
+
 
             cond = cur["condition_hi"] if is_hi else cur["condition_en"]
             wind_dir = wx.wind_direction_label(cur["winddirection"] or 0, lang)
             uv_lbl = wx.uv_label(cur["uv_index"], lang)
 
-            st.markdown(f"""
-            <div class="wx-main-card">
-                <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-                    <div class="wx-icon">{cur['icon']}</div>
-                    <div>
-                        <div class="wx-temp">{cur['temperature']:.1f}°C</div>
-                        <div class="wx-cond">{cond}</div>
-                        <div class="wx-meta">📍 {wx_dist_display} &nbsp;|&nbsp; 🕐 {t('weather_updated', lang)}: {cur['updated_at']}</div>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown(f"## {cur['icon']} {cur['temperature']:.1f}°C")
+                st.markdown(f"**{cond}**")
+                st.caption(f"📍 {wx_dist_display} &nbsp;|&nbsp; 🕐 {t('weather_updated', lang)}: {cur['updated_at']}")
+
 
             wc1, wc2, wc3, wc4, wc5, wc6 = st.columns(6)
             wc1.metric(t("weather_feels_like", lang), f"{cur['feels_like']:.1f}°C")
@@ -1262,37 +1261,35 @@ elif selected_nav == t("nav_weather", lang):
                 for i, day in enumerate(forecast):
                     cond_d = day["condition_hi"] if is_hi else day["condition_en"]
                     with fc_cols[i]:
-                        st.markdown(f"""
-                        <div class="wx-forecast-card">
-                            <div style="font-size:0.85rem;color:#94a3b8;">{day['date']}</div>
-                            <div style="font-size:2.2rem;margin:8px 0;">{day['icon']}</div>
-                            <div style="font-size:0.9rem;color:#cbd5e1;">{cond_d}</div>
-                            <div style="margin:10px 0;font-size:0.95rem;">
-                                <span style="color:#f87171;">▲ {day['temperature_max']:.0f}°C</span>
-                                &nbsp;&nbsp;
-                                <span style="color:#60a5fa;">▼ {day['temperature_min']:.0f}°C</span>
-                            </div>
-                            <div style="font-size:0.8rem;color:#94a3b8;">
-                                🌧 {day['precipitation_sum']:.1f} mm &nbsp; ❄ {day['snowfall_sum']:.1f} cm<br>
-                                💨 {day['wind_speed_max']:.0f} km/h
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        with st.container(border=True):
+                            st.caption(day['date'])
+                            st.markdown(f"### {day['icon']}")
+                            st.markdown(f"**{cond_d}**")
+                            st.markdown(f"🔴 **▲ {day['temperature_max']:.0f}°C** &nbsp;&nbsp; 🔵 **▼ {day['temperature_min']:.0f}°C**")
+                            st.caption(f"🌧 {day['precipitation_sum']:.1f} mm &nbsp; ❄ {day['snowfall_sum']:.1f} cm")
+                            st.caption(f"💨 {day['wind_speed_max']:.0f} km/h")
             else:
                 st.info("Forecast data not available.")
-            st.markdown("<hr class='section-divider'>", unsafe_allow_html=True)
+            st.markdown("---")
+
             st.subheader(f"⚠️ {t('weather_alert_header', lang)} — {wx_dist2_display}")
             if alerts2:
                 for a in alerts2:
                     msg = a["message_hi"] if is_hi else a["message_en"]
                     sev = a["severity"]
-                    cls = {"Critical": "wx-alert-critical", "High": "wx-alert-high"}.get(sev, "wx-alert-medium")
                     icon = {"Critical": "🚨", "High": "⚠️"}.get(sev, "🟡")
                     badge = {"Critical": t("weather_critical_badge", lang), "High": t("weather_high_badge", lang)}.get(sev, t("weather_medium_badge", lang))
-                    st.markdown(f'<div class="{cls}">{icon} <b>{badge}</b><br>{msg}</div>', unsafe_allow_html=True)
+                    alert_text = f"{icon} **{badge}**\n\n{msg}"
+                    if sev == "Critical":
+                        st.error(alert_text)
+                    elif sev == "High":
+                        st.warning(alert_text)
+                    else:
+                        st.info(alert_text)
             else:
                 st.success(t("weather_no_alerts", lang))
             st.caption(f"ℹ️ {t('weather_source', lang)}")
+
 
     with wx_tab3:
         st.subheader(t("weather_overview_title", lang))
@@ -1314,27 +1311,24 @@ elif selected_nav == t("nav_weather", lang):
                         cond = d["condition_hi"] if is_hi else d["condition_en"]
                         has_alert = d.get("has_alert", False)
                         sev = d.get("alert_severity", "High")
-                        border_color = "#ef4444" if has_alert and sev == "Critical" else ("#f59e0b" if has_alert else "#1e3a5f")
-                        badge_html = ""
-                        if has_alert:
-                            bc = "#ef4444" if sev == "Critical" else "#f59e0b"
-                            badge_html = f'<span style="background:{bc};color:#fff;padding:2px 8px;border-radius:999px;font-size:0.72rem;font-weight:800;">{"अलर्ट" if is_hi else "ALERT"}</span>'
-                        st.markdown(f"""
-                        <div style="background:#1e293b;border-radius:12px;padding:14px 16px;margin-bottom:12px;border:1px solid {border_color};transition:all 0.2s;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                                <b style="color:#e2e8f0;font-size:0.95rem;">{dist_name}</b>
-                                {badge_html}
-                            </div>
-                            <div style="font-size:1.6rem;margin:6px 0;">{d['icon']} <span style="font-size:1.3rem;color:#f1f5f9;font-weight:700;">{d['temperature']:.0f}°C</span></div>
-                            <div style="color:#94a3b8;font-size:0.82rem;">{cond}</div>
-                            <div style="color:#475569;font-size:0.78rem;margin-top:6px;">
-                                🌧 {d.get('precipitation', 0):.1f} mm &nbsp; 💨 {d.get('windspeed', 0):.0f} km/h
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+
+                        with st.container(border=True):
+                            # Alert badge
+                            if has_alert:
+                                if sev == "Critical":
+                                    st.error(f"🚨 {'अलर्ट' if is_hi else 'ALERT'}")
+                                else:
+                                    st.warning(f"⚠️ {'अलर्ट' if is_hi else 'ALERT'}")
+
+                            st.markdown(f"**{dist_name}**")
+                            st.markdown(f"### {d['icon']} {d['temperature']:.0f}°C")
+                            st.caption(cond)
+                            st.caption(f"🌧 {d.get('precipitation', 0):.1f} mm &nbsp; 💨 {d.get('windspeed', 0):.0f} km/h")
+
             st.caption(f"ℹ️ {t('weather_source', lang)}")
         else:
             st.error(t("weather_error", lang))
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
