@@ -42,16 +42,93 @@ st.markdown("""
 
 /* ── 2. SIDEBAR ─────────────────────────────────────────────────────────── */
 section[data-testid="stSidebar"] > div:first-child {
-    background: linear-gradient(180deg, #0B1120 0%, #0D1526 60%, #0A101E 100%) !important;
-    border-right: 1px solid rgba(59,130,246,0.12) !important;
+    background: linear-gradient(180deg, #0A0F1D 0%, #0E1626 50%, #080D18 100%) !important;
+    border-right: 1px solid rgba(59,130,246,0.15) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4) !important;
 }
 section[data-testid="stSidebar"] * { color: #CBD5E1 !important; }
 section[data-testid="stSidebar"] h1,
 section[data-testid="stSidebar"] h2,
-section[data-testid="stSidebar"] h3 { color: #F1F5F9 !important; }
-section[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.08) !important; }
-section[data-testid="stSidebar"] [data-testid="stRadio"] label { color: #94A3B8 !important; }
-section[data-testid="stSidebar"] [data-testid="stRadio"] label:hover { color: #F1F5F9 !important; }
+section[data-testid="stSidebar"] h3 { color: #F8FAFC !important; }
+section[data-testid="stSidebar"] hr { border-color: rgba(255,255,255,0.07) !important; }
+
+/* ── 2A. SIDEBAR NAVIGATION TILES ─────────────────────────────────────────── */
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+    gap: 0.45rem !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label > div:first-child {
+    display: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label {
+    background: rgba(30, 41, 59, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    cursor: pointer !important;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: flex !important;
+    align-items: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    margin-bottom: 2px !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:hover {
+    background: rgba(59, 130, 246, 0.12) !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:hover p {
+    color: #F8FAFC !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(30, 58, 138, 0.22) 100%) !important;
+    border: 1px solid rgba(59, 130, 246, 0.6) !important;
+    border-left: 5px solid #3B82F6 !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+    transform: translateX(3px) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] > label:has(input:checked) p {
+    color: #93C5FD !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* ── 2B. LANGUAGE TOGGLE SWITCH ─────────────────────────────────────────── */
+section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] {
+    display: flex !important;
+    flex-direction: row !important;
+    background: rgba(15, 23, 42, 0.8) !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    gap: 4px !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 6px 10px !important;
+    margin-bottom: 0 !important;
+    border-radius: 8px !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) {
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    border-left: none !important;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    transform: none !important;
+}
+section[data-testid="stSidebar"] [data-testid="stRadio"]:first-of-type [role="radiogroup"] > label:has(input:checked) p {
+    color: #FFFFFF !important;
+    font-weight: 800 !important;
+}
 
 /* ── 3. HEADINGS & TEXT ─────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6, p, label, span, div { color: #E2E8F0; }
@@ -130,7 +207,7 @@ h1, h2, h3, h4, h5, h6, p, label, span, div { color: #E2E8F0; }
 [data-baseweb="menu"] { background: #1A2035 !important; }
 [data-baseweb="option"]:hover { background: #243352 !important; }
 
-/* ── 7. RADIO BUTTONS ───────────────────────────────────────────────────── */
+/* ── 7. GENERAL RADIO BUTTONS ───────────────────────────────────────────── */
 [data-testid="stRadio"] > div { gap: 0.4rem; }
 [data-testid="stRadio"] label {
     background: rgba(30,41,59,0.7) !important;
@@ -146,28 +223,50 @@ h1, h2, h3, h4, h5, h6, p, label, span, div { color: #E2E8F0; }
     color: #93C5FD !important;
 }
 
-/* ── 8. TABS ────────────────────────────────────────────────────────────── */
+/* ── 8. MODERN PAGE SELECTION TABS ───────────────────────────────────────── */
+[data-testid="stTabs"] {
+    margin-top: 8px !important;
+}
 [data-testid="stTabs"] [role="tablist"] {
-    background: rgba(15,23,42,0.8) !important;
-    border-radius: 12px !important;
-    padding: 4px !important;
-    border: 1px solid #1E293B !important;
-    gap: 2px !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-radius: 16px !important;
+    padding: 6px 8px !important;
+    border: 1px solid rgba(59, 130, 246, 0.18) !important;
+    gap: 6px !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    margin-bottom: 22px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
 }
 [data-testid="stTabs"] [role="tab"] {
-    border-radius: 8px !important;
-    color: #64748B !important;
+    border-radius: 10px !important;
+    color: #94A3B8 !important;
     font-weight: 600 !important;
-    font-size: 0.88rem !important;
-    padding: 0.5rem 1rem !important;
-    transition: all 0.2s !important;
+    font-size: 0.92rem !important;
+    padding: 8px 18px !important;
+    border: 1px solid transparent !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: transparent !important;
+}
+[data-testid="stTabs"] [role="tab"]:hover {
+    color: #F8FAFC !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
 }
 [data-testid="stTabs"] [role="tab"][aria-selected="true"] {
-    background: linear-gradient(135deg, #1E3A5F 0%, #1a3050 100%) !important;
-    color: #93C5FD !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%) !important;
+    color: #FFFFFF !important;
+    font-weight: 800 !important;
+    border: 1px solid rgba(147, 197, 253, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-1px) !important;
 }
-[data-testid="stTabs"] [role="tab"]:hover { color: #94A3B8 !important; }
+[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display: none !important;
+}
+
 
 /* ── 9. PROGRESS BARS ───────────────────────────────────────────────────── */
 [data-testid="stProgress"] > div {
@@ -536,12 +635,15 @@ if "lang" not in st.session_state:
 # ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
-    <div style="display:flex;align-items:center;gap:12px;padding:4px 0 12px;">
-        <span style="font-size:2.2rem;">🚨</span>
-        <div>
-            <div style="font-size:1rem;font-weight:900;color:#F1F5F9;line-height:1.1;">आपदा राहत</div>
-            <div style="font-size:0.72rem;color:#475569;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">Disaster Relief Portal</div>
+    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:1.8rem;filter:drop-shadow(0 2px 8px rgba(220,38,38,0.6));">🚨</span>
+            <span style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.35);font-size:0.68rem;font-weight:800;padding:2px 8px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 6px #10B981;"></span> 24x7 LIVE
+            </span>
         </div>
+        <div style="font-size:1.05rem;font-weight:900;color:#F8FAFC;line-height:1.2;">उत्तराखंड आपदा राहत</div>
+        <div style="font-size:0.72rem;color:#60A5FA;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Disaster Management Portal</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -560,7 +662,8 @@ with st.sidebar:
     lang = st.session_state["lang"]
     is_hi = (lang == "hi")
 
-    st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:12px 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size:0.75rem;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:4px;'>{t('nav_title', lang)}</div>", unsafe_allow_html=True)
 
     nav_options = [
         t("nav_dashboard", lang), t("nav_report", lang), t("nav_find_help", lang),
@@ -572,21 +675,25 @@ with st.sidebar:
         t("nav_title", lang),
         nav_options,
         format_func=lambda x: f"{nav_icons[nav_options.index(x)]}  {x}",
-        index=0
+        index=0,
+        label_visibility="collapsed"
     )
 
-    st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:12px 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
 
     # Helplines in sidebar
-    st.markdown(f"<div style='font-size:0.8rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;'>{t('helpline_title', lang)}</div>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class="sidebar-helpline">
-        <div>📞 <span>1070</span> — राज्य कंट्रोल रूम</div>
-        <div>🚔 <span>112</span> — आपातकाल / Emergency</div>
-        <div>🪖 <span>0135-2710334</span> — SDRF</div>
-        <div>🚑 <span>108</span> — Ambulance</div>
+    st.markdown(f"""
+    <div class="sidebar-helpline" style="background: linear-gradient(135deg, rgba(127,29,29,0.22) 0%, rgba(30,41,59,0.5) 100%); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 12px 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
+        <div style="font-size:0.78rem;font-weight:800;color:#F87171;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            🚨 {t('helpline_title', lang)}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:0.82rem;"><span style="color:#CBD5E1;">📞 राज्य कंट्रोल</span><b style="color:#FEF2F2;background:rgba(239,68,68,0.3);padding:2px 7px;border-radius:6px;">1070</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:0.82rem;"><span style="color:#CBD5E1;">🚔 Emergency</span><b style="color:#FEF2F2;background:rgba(239,68,68,0.3);padding:2px 7px;border-radius:6px;">112</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:0.82rem;"><span style="color:#CBD5E1;">🪖 SDRF Helpline</span><b style="color:#FEF2F2;background:rgba(239,68,68,0.3);padding:2px 7px;border-radius:6px;font-size:0.75rem;">0135-2710334</b></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:5px 0;font-size:0.82rem;"><span style="color:#CBD5E1;">🚑 Ambulance</span><b style="color:#FEF2F2;background:rgba(239,68,68,0.3);padding:2px 7px;border-radius:6px;">108</b></div>
     </div>
     """, unsafe_allow_html=True)
+
 
 lang = st.session_state["lang"]
 is_hi = (lang == "hi")
