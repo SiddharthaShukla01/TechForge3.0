@@ -1480,8 +1480,11 @@ elif selected_nav == t("nav_suggestions", lang):
 # 6. WEATHER
 # ─────────────────────────────────────────────────────────────────────────────
 elif selected_nav == t("nav_weather", lang):
-    st.markdown(f'<div class="portal-title">{t("weather_page_title", lang)}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="portal-subtitle">{t("weather_page_subtitle", lang)}</div>', unsafe_allow_html=True)
+    wx_p_title = "🌦️ लाइव मौसम एवं मौसम चेतावनी प्रणाली" if is_hi else "🌦️ Live Weather & Weather Alert System"
+    wx_p_sub = "उत्तराखंड के सभी 13 जिलों के लिए वास्तविक समय मौसम स्थिति और स्वचालित खतरा अलर्ट।" if is_hi else "Real-time weather conditions and automatic hazard alerts for all 13 districts of Uttarakhand."
+    st.markdown(f'<div class="portal-title">{wx_p_title}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="portal-subtitle">{wx_p_sub}</div>', unsafe_allow_html=True)
+
 
     wx_tab1, wx_tab2, wx_tab3 = st.tabs([
         t("weather_current_conditions", lang),

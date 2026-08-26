@@ -28,7 +28,10 @@ TRANSLATIONS = {
 
         # Weather Section
         "weather_title": "🌦️ Live Weather & Weather Alert System",
+        "weather_page_title": "🌦️ Live Weather & Weather Alert System",
         "weather_subtitle": "Real-time weather conditions and automatic hazard alerts for all 13 districts of Uttarakhand.",
+        "weather_page_subtitle": "Real-time weather conditions and automatic hazard alerts for all 13 districts of Uttarakhand.",
+
         "weather_select_district": "Select District to View Details",
         "weather_current_conditions": "Current Conditions",
         "weather_3day_forecast": "3-Day Forecast",
@@ -222,7 +225,10 @@ TRANSLATIONS = {
 
         # Weather Section
         "weather_title": "🌦️ लाइव मौसम एवं मौसम चेतावनी प्रणाली",
+        "weather_page_title": "🌦️ लाइव मौसम एवं मौसम चेतावनी प्रणाली",
         "weather_subtitle": "उत्तराखंड के सभी 13 जिलों के लिए वास्तविक समय मौसम स्थिति और स्वचालित खतरा अलर्ट।",
+        "weather_page_subtitle": "उत्तराखंड के सभी 13 जिलों के लिए वास्तविक समय मौसम स्थिति और स्वचालित खतरा अलर्ट।",
+
         "weather_select_district": "विस्तृत जानकारी के लिए जिला चुनें",
         "weather_current_conditions": "वर्तमान मौसम स्थिति",
         "weather_3day_forecast": "3-दिवसीय पूर्वानुमान",
