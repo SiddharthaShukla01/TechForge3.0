@@ -692,7 +692,11 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
+    if st.button("🔄 " + ("लाइव डेटा रीफ्रेश करें" if is_hi else "Refresh Live Data"), use_container_width=True):
+        st.rerun()
+
     st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+
 
     # Helplines in sidebar
     st.markdown(f"""
@@ -726,7 +730,27 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# ─── Live Status & Real-time Sync Indicator ──────────────────────────────────
+live_time_str = datetime.now().strftime("%d %b %Y | %I:%M:%S %p IST")
+c_pulse, c_rebtn = st.columns([4, 1])
+with c_pulse:
+    st.markdown(f"""
+    <div style="background:linear-gradient(90deg, rgba(15,23,42,0.9) 0%, rgba(30,41,59,0.8) 100%);border:1px solid rgba(59,130,246,0.3);border-radius:10px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span style="font-size:0.8rem;color:#38BDF8;font-weight:700;display:inline-flex;align-items:center;gap:6px;">
+            <span style="width:8px;height:8px;border-radius:50%;background:#10B981;box-shadow:0 0 10px #10B981;"></span>
+            {'🔴 लाइव आपातकालीन डेटा — वास्तविक समय में सिंक' if is_hi else '🔴 Live Emergency Feed — Real-Time Synced'}
+        </span>
+        <span style="font-size:0.78rem;color:#94A3B8;">
+            🕒 {'अंतिम अपडेट:' if is_hi else 'Last Refreshed:'} <b style="color:#F1F5F9;">{live_time_str}</b>
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+with c_rebtn:
+    if st.button("🔄 " + ("रीफ्रेश" if is_hi else "Live Refresh"), use_container_width=True, help="Fetch latest live weather, alerts and hospital bed counts"):
+        st.rerun()
+
 # ─── District Helpers ─────────────────────────────────────────────────────────
+
 def get_district_display(district_key):
     return DISTRICT_NAMES_MAP.get(district_key, {}).get(lang, district_key)
 

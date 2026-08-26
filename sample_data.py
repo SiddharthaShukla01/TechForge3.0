@@ -3,6 +3,7 @@ Sample Data Loader for Uttarakhand Disaster Alert & Resource Management System.
 Populates complete bilingual (हिंदी / English) mock data across all 13 districts of Uttarakhand.
 """
 from database import get_connection, create_tables, clear_all_data
+from datetime import datetime, timedelta
 
 def insert_sample_data(reset_existing=True):
     create_tables()
@@ -11,8 +12,20 @@ def insert_sample_data(reset_existing=True):
         print("Clearing and recreating tables for clean bilingual schema...")
         clear_all_data()
 
+    now = datetime.now()
+    t_25m = (now - timedelta(minutes=25)).strftime("%Y-%m-%d %H:%M")
+    t_45m = (now - timedelta(minutes=45)).strftime("%Y-%m-%d %H:%M")
+    t_1h = (now - timedelta(hours=1, minutes=15)).strftime("%Y-%m-%d %H:%M")
+    t_3h = (now - timedelta(hours=3, minutes=10)).strftime("%Y-%m-%d %H:%M")
+    t_5h = (now - timedelta(hours=5, minutes=20)).strftime("%Y-%m-%d %H:%M")
+    t_8h = (now - timedelta(hours=8, minutes=30)).strftime("%Y-%m-%d %H:%M")
+    t_14h = (now - timedelta(hours=14)).strftime("%Y-%m-%d %H:%M")
+    t_1d = (now - timedelta(days=1, hours=2)).strftime("%Y-%m-%d %H:%M")
+    t_2d = (now - timedelta(days=2)).strftime("%Y-%m-%d %H:%M")
+
     with get_connection() as conn:
         c = conn.cursor()
+
         
         # -------------------------------------------------------------
         # 1. SHELTERS ACROSS ALL 13 DISTRICTS (Bilingual)
@@ -219,7 +232,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 29.9457,
                 78.1642,
-                "2026-08-26 06:30",
+                t_25m,
                 "Active",
                 "सक्रिय (Active)"
             ),
@@ -236,7 +249,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 30.5500,
                 79.5667,
-                "2026-08-26 07:15",
+                t_45m,
                 "Active",
                 "सक्रिय (Active)"
             ),
@@ -253,7 +266,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 30.2844,
                 78.9811,
-                "2026-08-26 05:45",
+                t_1h,
                 "Active",
                 "सक्रिय (Active)"
             ),
@@ -270,7 +283,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 30.7268,
                 78.4354,
-                "2026-08-26 03:20",
+                t_3h,
                 "Active",
                 "सक्रिय (Active)"
             ),
@@ -287,7 +300,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 29.5828,
                 80.2182,
-                "2026-08-25 18:00",
+                t_5h,
                 "Active",
                 "सक्रिय (Active)"
             ),
@@ -304,7 +317,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 30.3800,
                 78.4800,
-                "2026-08-25 14:00",
+                t_8h,
                 "Under Control",
                 "नियंत्रण में (Under Control)"
             ),
@@ -321,7 +334,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 29.3919,
                 79.4542,
-                "2026-08-25 09:30",
+                t_14h,
                 "Under Control",
                 "नियंत्रण में (Under Control)"
             ),
@@ -338,7 +351,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 29.5971,
                 79.6591,
-                "2026-08-24 11:00",
+                t_1d,
                 "Resolved",
                 "समाधान हो गया (Resolved)"
             ),
@@ -355,7 +368,7 @@ def insert_sample_data(reset_existing=True):
                 "",
                 30.1500,
                 78.7800,
-                "2026-08-23 15:30",
+                t_2d,
                 "Resolved",
                 "समाधान हो गया (Resolved)"
             )
@@ -378,7 +391,7 @@ def insert_sample_data(reset_existing=True):
                 "CRITICAL: Cloudburst and flash flood in Rudraprayag (Guptkashi area)! SDRF and NDRF rescue teams dispatched. Move to high ground immediately.",
                 "🚨 अति-गंभीर: रुद्रप्रयाग (गुप्तकाशी) में बादल फटने व फ्लैश फ्लड की सूचना! SDRF एवं NDRF दल रवाना। नदी किनारे से तुरंत सुरक्षित स्थानों पर जाएं।",
                 "Critical",
-                "2026-08-26 05:45",
+                t_25m,
                 "All"
             ),
             (
@@ -386,7 +399,7 @@ def insert_sample_data(reset_existing=True):
                 "CRITICAL: Ganga river at danger level in Haridwar. High alert issued for all bathing ghats and low-lying settlements.",
                 "🚨 अति-गंभीर: हरिद्वार में गंगा नदी खतरे के निशान के करीब। सभी स्नान घाटों और निचले इलाकों में हाई अलर्ट जारी।",
                 "Critical",
-                "2026-08-26 06:30",
+                t_45m,
                 "All"
             ),
             (
@@ -394,7 +407,7 @@ def insert_sample_data(reset_existing=True):
                 "HIGH WARNING: Landslide on Badrinath NH-58 near Helang (Chamoli). Traffic halted. Travelers advised to stay at nearest transit camps.",
                 "⚠️ उच्च चेतावनी: चमोली (हेलंग) के पास बद्रीनाथ राष्ट्रीय राजमार्ग NH-58 पर भारी भूस्खलन। मार्ग अवरुद्ध। यात्री नजदीकी विश्राम स्थल पर रुकें।",
                 "High",
-                "2026-08-26 07:15",
+                t_1h,
                 "Chamoli"
             ),
             (
@@ -402,7 +415,7 @@ def insert_sample_data(reset_existing=True):
                 "HIGH WARNING: Dharchula route in Pithoragarh disrupted due to mountain debris. Emergency clearance machines deployed.",
                 "⚠️ उच्च चेतावनी: पिथौरागढ़ (धारचूला) मार्ग पर मलबा आने से आवागमन बाधित। जेसीबी एवं मार्ग खोलने वाले उपकरण तैनात।",
                 "High",
-                "2026-08-25 18:00",
+                t_5h,
                 "Pithoragarh"
             ),
             (
@@ -410,7 +423,7 @@ def insert_sample_data(reset_existing=True):
                 "MEDIUM: Magnitude 4.3 earthquake tremors felt in Uttarkashi. No major loss of life reported. Stay alert for minor aftershocks.",
                 "ℹ️ सूचना: उत्तरकाशी में 4.3 तीव्रता का भूकंप का झटका। जान-माल के बड़े नुकसान की खबर नहीं है। सतर्क रहें।",
                 "Medium",
-                "2026-08-26 03:20",
+                t_8h,
                 "Uttarkashi"
             ),
             (
@@ -418,7 +431,7 @@ def insert_sample_data(reset_existing=True):
                 "SAFETY UPDATE: Ranikhet (Almora) forest fire has been completely controlled and extinguished. Area declared safe.",
                 "🟢 सुरक्षा अपडेट: रानीखेत (अल्मोड़ा) के जंगल की आग पर वन विभाग द्वारा पूरी तरह काबू पा लिया गया है। क्षेत्र सुरक्षित है।",
                 "Low",
-                "2026-08-24 16:00",
+                t_1d,
                 "Almora"
             )
         ]
@@ -447,7 +460,7 @@ def insert_sample_data(reset_existing=True):
                 58,
                 "Approved / In Progress",
                 "स्वीकृत व प्रगति पर (Approved / In Progress)",
-                "2026-08-24 10:30"
+                t_5h
             ),
             (
                 "Drone Emergency Medicine & First Aid Delivery in High Himalayas",
@@ -462,7 +475,7 @@ def insert_sample_data(reset_existing=True):
                 44,
                 "Under Review",
                 "समीक्षाधीन (Under Review)",
-                "2026-08-25 12:15"
+                t_8h
             ),
             (
                 "Solar-Powered Phone Charging & Satellite WiFi at Relief Camps",
@@ -477,7 +490,7 @@ def insert_sample_data(reset_existing=True):
                 37,
                 "Implemented",
                 "लागू किया गया (Implemented)",
-                "2026-08-23 16:40"
+                t_14h
             ),
             (
                 "Village Youth 'Aapda Mitra' Local First-Responder Corps",
@@ -492,7 +505,7 @@ def insert_sample_data(reset_existing=True):
                 49,
                 "Approved / In Progress",
                 "स्वीकृत व प्रगति पर (Approved / In Progress)",
-                "2026-08-25 09:20"
+                t_1d
             ),
             (
                 "Live Heavy Machine & Route Clearance ETA Tracker on Portal",
@@ -507,9 +520,10 @@ def insert_sample_data(reset_existing=True):
                 65,
                 "Under Review",
                 "समीक्षाधीन (Under Review)",
-                "2026-08-26 08:10"
+                t_2d
             )
         ]
+
         c.executemany(
             """
             INSERT INTO suggestions (title, title_hi, category, category_hi, description, description_hi, contributor, district, district_hi, upvotes, status, status_hi, created_at)
