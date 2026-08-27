@@ -661,7 +661,53 @@ h1, h2, h3, h4, h5, h6, p, label, span, div { color: #E2E8F0; }
 if "lang" not in st.session_state:
     st.session_state["lang"] = "hi"
 
-# ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+# ─── Dedicated Admin URL Parameter Routing ───────────────────────────────────
+qp_page = st.query_params.get("page", "").lower()
+qp_admin = st.query_params.get("admin", "").lower()
+is_direct_admin_url = (qp_page in ["admin", "control_room", "seoc"]) or (qp_admin in ["true", "1"])
+
+if is_direct_admin_url:
+    with st.sidebar:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <span style="font-size:1.8rem;filter:drop-shadow(0 2px 8px rgba(59,130,246,0.6));">🏛️</span>
+                <span style="background:rgba(59,130,246,0.15);color:#38BDF8;border:1px solid rgba(59,130,246,0.35);font-size:0.68rem;font-weight:800;padding:2px 8px;border-radius:999px;">
+                    SEOC ADMIN
+                </span>
+            </div>
+            <div style="font-size:1.05rem;font-weight:900;color:#F8FAFC;line-height:1.2;">उत्तराखंड आपदा कमान</div>
+            <div style="font-size:0.72rem;color:#38BDF8;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;margin-top:2px;">Incident Command Desk</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        lang_choice = st.radio(
+            t("lang_switch_label", st.session_state["lang"]),
+            options=["hi", "en"],
+            format_func=lambda x: "🇮🇳 हिंदी" if x == "hi" else "🇬🇧 English",
+            index=0 if st.session_state["lang"] == "hi" else 1,
+            horizontal=True,
+            key="admin_direct_lang_radio"
+        )
+        if lang_choice != st.session_state["lang"]:
+            st.session_state["lang"] = lang_choice
+            st.rerun()
+
+        lang = st.session_state["lang"]
+        is_hi = (lang == "hi")
+
+        if st.button("🔄 " + ("लाइव डेटा रीफ्रेश करें" if is_hi else "Refresh Live Feeds"), use_container_width=True):
+            st.rerun()
+
+        st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+        st.markdown("🔗 [← " + ("नागरिक पब्लिक पोर्टल पर जाएं" if is_hi else "Back to Citizen Portal") + "](/?page=home)")
+        st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+
+    # RENDER IN FULL MAIN SCREEN CANVAS (OUTSIDE SIDEBAR)
+    render_admin_dashboard(st.session_state["lang"], st.session_state["lang"] == "hi")
+    st.stop()
+
+# ─── PUBLIC CITIZEN SIDEBAR ───────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
@@ -691,21 +737,6 @@ with st.sidebar:
     lang = st.session_state["lang"]
     is_hi = (lang == "hi")
 
-    # ── Dedicated Admin URL Parameter Routing ──
-    qp_page = st.query_params.get("page", "").lower()
-    qp_admin = st.query_params.get("admin", "").lower()
-    is_direct_admin_url = (qp_page in ["admin", "control_room", "seoc"]) or (qp_admin in ["true", "1"])
-
-    if is_direct_admin_url:
-        st.markdown(f"<div style='font-size:0.75rem;font-weight:800;color:#38BDF8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:4px;'>🏛️ SEOC COMMAND DESK</div>", unsafe_allow_html=True)
-        if st.button("🔄 " + ("लाइव डेटा रीफ्रेश करें" if is_hi else "Refresh Live Feeds"), use_container_width=True):
-            st.rerun()
-        st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
-        st.markdown("🔗 [← " + ("नागरिक पब्लिक पोर्टल पर जाएं" if is_hi else "Back to Citizen Portal") + "](/?page=home)")
-        st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
-        render_admin_dashboard(lang, is_hi)
-        st.stop()
-
     st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
     st.markdown(f"<div style='font-size:0.75rem;font-weight:800;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-left:4px;'>{t('nav_title', lang)}</div>", unsafe_allow_html=True)
 
@@ -728,6 +759,7 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+
 
 
 
