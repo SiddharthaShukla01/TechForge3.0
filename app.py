@@ -22,8 +22,12 @@ from database import (
     add_shelter, edit_shelter, delete_shelter,
     add_resource, edit_resource, delete_resource,
     delete_alert, delete_suggestion,
+    report_fake_info, get_all_fake_reports, resolve_fake_report,
+    blacklist_contact, is_contact_blacklisted, get_blacklisted_contacts, unblacklist_contact,
+    submit_shelter_runtime_checkin, get_shelter_runtime_history,
     DISTRICT_NAMES_MAP, ALL_DISTRICTS, DISTRICT_COORDINATES
 )
+
 
 from translations import (t, DISASTER_TYPE_TRANSLATIONS, SEVERITY_TRANSLATIONS, STATUS_TRANSLATIONS)
 import sample_data
@@ -694,19 +698,42 @@ with st.sidebar:
         t("nav_suggestions", lang), t("nav_admin", lang)
     ]
 
-    nav_icons = ["📊", "📝", "📍", "🔔", "🌤️", "💡", "⚙️"]
+    # ── Dedicated Admin URL Parameter Routing ──
+    qp_page = st.query_params.get("page", "").lower()
+    qp_admin = st.query_params.get("admin", "").lower()
+    is_direct_admin_url = (qp_page in ["admin", "control_room", "seoc"]) or (qp_admin in ["true", "1"])
+
+    admin_label = t("nav_admin", lang)
+    init_index = nav_options.index(admin_label) if is_direct_admin_url and admin_label in nav_options else 0
 
     selected_nav = st.radio(
         t("nav_title", lang),
         nav_options,
-        index=0,
-        label_visibility="collapsed"
+        index=init_index,
+        label_visibility="collapsed",
+        key="main_navigation_radio"
     )
+
+    # Sync query params with selected navigation
+    if selected_nav == admin_label:
+        st.query_params["page"] = "admin"
+    else:
+        if "page" in st.query_params:
+            del st.query_params["page"]
 
     if st.button("🔄 " + ("लाइव डेटा रीफ्रेश करें" if is_hi else "Refresh Live Data"), use_container_width=True):
         st.rerun()
 
+    # Direct Admin link badge in sidebar
+    st.markdown(f"""
+    <div style="background:rgba(30,41,59,0.5);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;margin-top:6px;font-size:0.75rem;">
+        <span style="color:#94A3B8;">🔗 <b>{'एडमिन का सीधा URL' if is_hi else 'Direct Admin URL'}:</b></span><br/>
+        <code style="color:#38BDF8;font-size:0.72rem;word-break:break-all;">?page=admin</code>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("<hr style='border-color:rgba(255,255,255,0.06);margin:14px 0 10px;'>", unsafe_allow_html=True)
+
 
 
     # Helplines in sidebar
@@ -1064,24 +1091,29 @@ elif selected_nav == t("nav_report", lang):
         submitted = st.form_submit_button(t("btn_submit_report", lang), type="primary", use_container_width=True)
 
         if submitted:
-            full_desc = f"{landmark} — {description}" if landmark else description
-            if not full_desc.strip():
-                full_desc = f"{chosen_dtype_key} incident in {clean_location} requiring verification."
             contact_str = phone.strip() if phone.strip() else "N/A"
-            saved_paths = []
-            if uploaded_files:
-                for ufile in uploaded_files:
-                    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    safe_name = f"{ts}_{ufile.name.replace(' ', '_')}"
-                    dest_path = os.path.join("uploads", safe_name)
-                    with open(dest_path, "wb") as f:
-                        f.write(ufile.getbuffer())
-                    saved_paths.append(dest_path)
-            media_str = ";".join(saved_paths) if saved_paths else ""
-            did = add_disaster(dtype=chosen_dtype_key, location=clean_location, severity=clean_sev,
-                description=full_desc, reporter_contact=contact_str, evidence_media=media_str)
-            st.success(t("report_success_title", lang))
-            st.info(t("report_success_msg", lang).replace("{did}", str(did)))
+            
+            if is_contact_blacklisted(contact_str):
+                st.error("🚫 " + ("**अस्वीकृत / ACCESS BLOCKED:** यह संपर्क नंबर आपदा प्रबंधन अधिनियम, 2005 की धारा 54 के तहत फर्जी सूचना/अफवाह फैलाने के कारण राज्य आपदा प्राधिकरण द्वारा ब्लॉक किया गया है।" if is_hi else "**REPORT BLOCKED / ACCESS SUSPENDED:** This phone number has been blacklisted by State Disaster Authorities under Section 54 of the Disaster Management Act, 2005 for repeatedly transmitting false alarms/hoaxes."))
+            else:
+                full_desc = f"{landmark} — {description}" if landmark else description
+                if not full_desc.strip():
+                    full_desc = f"{chosen_dtype_key} incident in {clean_location} requiring verification."
+                saved_paths = []
+                if uploaded_files:
+                    for ufile in uploaded_files:
+                        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        safe_name = f"{ts}_{ufile.name.replace(' ', '_')}"
+                        dest_path = os.path.join("uploads", safe_name)
+                        with open(dest_path, "wb") as f:
+                            f.write(ufile.getbuffer())
+                        saved_paths.append(dest_path)
+                media_str = ";".join(saved_paths) if saved_paths else ""
+                did = add_disaster(dtype=chosen_dtype_key, location=clean_location, severity=clean_sev,
+                    description=full_desc, reporter_contact=contact_str, evidence_media=media_str)
+                st.success(t("report_success_title", lang))
+                st.info(t("report_success_msg", lang).replace("{did}", str(did)))
+
             if saved_paths:
                 st.markdown("##### 📸 " + ("संलग्न प्रमाण एवं AI प्रामाणिकता फोरेंसिक जांच" if is_hi else "Attached Evidence & AI Authenticity Forensics"))
                 for idx, fpath in enumerate(saved_paths):
@@ -1168,7 +1200,7 @@ elif selected_nav == t("nav_find_help", lang):
                                     🏠 {s_name} <span style="font-size:0.75rem;color:#60A5FA;">↗️</span>
                                 </a>
                             </div>
-                            <div class="resource-district">📍 {dist_label}</div>
+                            <div class="resource-district">📍 {dist_label} &nbsp;|&nbsp; <span style="color:#10B981;font-weight:700;font-size:0.75rem;">🔴 {'लाइव रनटाइम सिंक' if is_hi else 'Live Runtime Synced'}</span></div>
                         </div>
                         <span class="avail-badge {badge_cls}">{badge_txt}</span>
                     </div>
@@ -1176,16 +1208,40 @@ elif selected_nav == t("nav_find_help", lang):
                         <div class="res-progress-bar {prog_cls}" style="width:{occ_ratio*100:.0f}%;"></div>
                     </div>
                     <div class="res-stats-row">
-                        <span>{'भरे हुए' if is_hi else 'Occupied'}: <b>{occ}/{cap}</b></span>
+                        <span>{'भरे हुए' if is_hi else 'Occupied'}: <b>{occ}/{cap}</b> ({avail} {'स्थान खाली' if is_hi else 'beds available'})</span>
                         <span>📞 <span style="color:#93C5FD;font-family:monospace;">{s['contact']}</span></span>
                     </div>
-                    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="margin-top:8px;padding:6px 10px;background:rgba(15,23,42,0.6);border-radius:6px;font-size:0.76rem;color:#CBD5E1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                        <span>🍞 <b>{'राशन' if is_hi else 'Ration'}:</b> <span style="color:#34D399;">{'पर्याप्त' if is_hi else 'Sufficient'}</span></span>
+                        <span>💧 <b>{'पेयजल' if is_hi else 'Water'}:</b> <span style="color:#38BDF8;">{'उपलब्ध' if is_hi else 'Adequate'}</span></span>
+                        <span>🩺 <b>{'चिकित्सा' if is_hi else 'Medical'}:</b> <span style="color:#FBBF24;">{'फर्स्ट एड दल' if is_hi else 'First-Aid Crew'}</span></span>
+                    </div>
+                    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
                         <a href="{gmaps_url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.18);border:1px solid rgba(59,130,246,0.4);color:#93C5FD;padding:6px 14px;border-radius:8px;font-size:0.8rem;font-weight:700;text-decoration:none;">
-                            🗺️ {'गूगल मैप्स पर लोकेशन व दिशा-निर्देश देखें' if is_hi else 'View Shelter on Google Maps'} ↗️
+                            🗺️ {'गूगल मैप्स पर लोकेशन व नेविगेशन' if is_hi else 'Turn-by-Turn GPS Navigation'} ↗️
                         </a>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+
+                # Ground Volunteer Runtime Check-In Expander
+                with st.expander("⚡ " + (f"जमीनी लाइव स्थिति अपडेट करें — {s_name}" if is_hi else f"Volunteer Live Ground Check-In — {s['name']}")):
+                    with st.form(f"shelter_checkin_form_{s['id']}"):
+                        sc_c1, sc_c2 = st.columns(2)
+                        with sc_c1:
+                            rt_occ = st.number_input("Current Live Headcount (वर्तमान उपस्थित लोग):", min_value=0, max_value=cap*2, value=occ, key=f"rt_occ_{s['id']}")
+                            rt_food = st.selectbox("Food / Ration Status:", ["Sufficient", "Low Supply", "Depleted / Urgent Help Needed"], key=f"rt_food_{s['id']}")
+                        with sc_c2:
+                            rt_water = st.selectbox("Drinking Water Availability:", ["Adequate", "Needs Water Tanker Refill", "Critical Shortage"], key=f"rt_water_{s['id']}")
+                            rt_med = st.selectbox("Medical Team on Ground:", ["Doctor on Duty", "First Aid Kit Only", "Needs Ambulance / Doctor"], key=f"rt_med_{s['id']}")
+
+                        rt_vol = st.text_input("Volunteer / Camp Manager Name & Contact:", placeholder="e.g. Rahul Negi (Red Cross Volunteer, 9876543210)", key=f"rt_vol_{s['id']}")
+
+                        if st.form_submit_button("⚡ " + ("लाइव स्थिति सबमिट करें" if is_hi else "Submit Real-Time Check-In"), type="primary"):
+                            submit_shelter_runtime_checkin(s['id'], rt_occ, rt_food, rt_water, rt_med, rt_vol.strip() or "Ground Volunteer")
+                            st.success("✅ " + ("राहत शिविर की वास्तविक समय स्थिति सफलतापूर्वक अपडेट हो गई!" if is_hi else "Real-time shelter capacity and supply status updated successfully!"))
+                            st.rerun()
+
         else:
             st.warning(t("no_shelters", lang))
 
@@ -1431,6 +1487,20 @@ elif selected_nav == t("nav_alerts", lang):
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+
+                with st.expander("🚩 " + ("फर्जी / भ्रामक अलर्ट की रिपोर्ट करें (Flag Fake Alert)" if is_hi else "Flag as Fake / Misleading Alert")):
+                    with st.form(f"fake_alert_form_{alert['id']}"):
+                        f_r_opts = ["पुराना/असंबंधित वीडियो या फोटो (Recycled Media)", "झूठी आपदा/अफवाह (Hoax Disaster Alert)", "गलत स्थान/क्षेत्र सुरक्षित है (False Location)", "बढ़ा-चढ़ाकर बताई गई क्षति (Exaggerated Panic)"] if is_hi else ["Recycled / Outdated Media", "False Hazard / Panic Hoax", "Incorrect Location / Area Safe", "Exaggerated Casualty Claim"]
+                        flg_reason = st.selectbox("Reason for Reporting / कारण:", f_r_opts, key=f"f_rs_{alert['id']}")
+                        flg_det = st.text_area("Ground Truth & Evidence / जमीनी सच का विवरण:", placeholder="Explain why this information is incorrect...", key=f"f_dt_{alert['id']}")
+                        flg_user = st.text_input("Your Contact / Name (Optional):", placeholder="e.g. Local Resident 9876543210", key=f"f_us_{alert['id']}")
+                        if st.form_submit_button("🚩 " + ("शिकायत सबमिट करें" if is_hi else "Submit Grievance"), type="secondary"):
+                            if flg_det.strip():
+                                report_fake_info("alert", alert['id'], flg_user.strip() or "Citizen", flg_reason, flg_det.strip())
+                                st.success("✅ " + ("आपकी शिकायत राज्य आपदा नियंत्रण कक्ष एवं साइबर सेल को प्रेषित कर दी गई है।" if is_hi else "Grievance lodged with State Incident Command for immediate verification."))
+                            else:
+                                st.warning("Please provide details before submitting.")
+
         else:
             st.info(t("no_alerts", lang))
     else:
@@ -1887,16 +1957,18 @@ elif selected_nav == t("nav_admin", lang):
         st.markdown("<hr style='border-color:rgba(255,255,255,0.08);margin:16px 0;'>", unsafe_allow_html=True)
 
         # ── Comprehensive Admin Command Tabs ──
-        ad_tab1, ad_tab2, ad_tab3, ad_tab4, ad_tab5, ad_tab6, ad_tab7, ad_tab8 = st.tabs([
+        ad_tab1, ad_tab2, ad_tab3, ad_tab4, ad_tab5, ad_tab6, ad_tab7, ad_tab8, ad_tab9 = st.tabs([
             "🚨 " + ("घटना नियंत्रण व रेस्क्यू" if is_hi else "Incidents & Rescue"),
             "🏥 " + ("अस्पताल व बेड" if is_hi else "Hospitals & Beds"),
             "🏠 " + ("राहत शिविर" if is_hi else "Relief Shelters"),
             "📦 " + ("राशन व आपूर्ति भंडार" if is_hi else "Supplies & Stockpiles"),
             "📢 " + ("आपातकालीन ब्रॉडकास्ट" if is_hi else "Emergency Broadcast"),
             "💡 " + ("सुझाव व नवाचार" if is_hi else "Suggestions Review"),
+            "⚖️ " + ("फर्जी सूचना निस्तारण व साइबर सेल" if is_hi else "Fake News Grievance Cell"),
             "📊 " + ("दैनिक SitRep व रिपोर्ट" if is_hi else "SitRep & Reports"),
             "⚙️ " + ("डेटाबेस ऑपरेशन्स" if is_hi else "Database Tools")
         ])
+
 
         # ─────────────────────────────────────────────────────────────────────
         # TAB 1: INCIDENTS CONTROL & SDRF RESCUE DISPATCH
@@ -2306,9 +2378,98 @@ elif selected_nav == t("nav_admin", lang):
                                     st.rerun()
 
         # ─────────────────────────────────────────────────────────────────────
-        # TAB 7: SITUATION REPORT (SITREP) & DATA EXPORT CENTER
+        # TAB 7: FAKE NEWS & MISINFORMATION GRIEVANCE CELL
         # ─────────────────────────────────────────────────────────────────────
         with ad_tab7:
+            st.subheader("⚖️ " + ("फर्जी सूचना निस्तारण एवं कानूनी प्रवर्तन सेल" if is_hi else "Misinformation & Fake News Enforcement Cell"))
+            st.markdown(f"""
+            <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;">
+                <div style="font-size:0.88rem;font-weight:800;color:#F87171;display:flex;align-items:center;gap:6px;">
+                    ⚖️ {'आपदा प्रबंधन अधिनियम, 2005 (धारा 54) — वैधानिक प्रवर्तन' if is_hi else 'Disaster Management Act, 2005 (Section 54) — Statutory Enforcement'}
+                </div>
+                <div style="font-size:0.78rem;color:#CBD5E1;margin-top:4px;">
+                    {'आपदा के दौरान झूठी चेतावनी, अफवाह या फर्जी सूचना प्रसारित करना 1 वर्ष तक के कारावास और जुर्माने से दंडनीय अपराध है।' if is_hi else 'Circulating false alarms or misleading disaster claims is a punishable offense with imprisonment up to 1 year or fine.'}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            fn_subtab1, fn_subtab2 = st.tabs([
+                "🚩 " + ("नागरिक शिकायतों की समीक्षा" if is_hi else "Flagged Public Grievances"),
+                "🚫 " + ("ब्लैकलिस्टेड नंबर सूची" if is_hi else "Blacklisted Callers Registry")
+            ])
+
+            with fn_subtab1:
+                df_fake = get_all_fake_reports()
+                if not df_fake.empty:
+                    st.markdown(f"Total flagged misinformation claims: **{len(df_fake)}**")
+                    for _, fr in df_fake.iterrows():
+                        with st.container(border=True):
+                            fc_c1, fc_c2 = st.columns([4, 2])
+                            with fc_c1:
+                                st.markdown(f"**Grievance #{fr['id']}** | Target: `{fr['item_type'].upper()} #{fr['item_id']}` | Status: `{fr['status']}`")
+                                st.markdown(f"🚩 **Reason:** `{fr['reason']}`")
+                                st.markdown(f"📝 **Details:** {fr['details']}")
+                                st.caption(f"👤 Flagged by: {fr['flagged_by']} | 🕐 {fr['flagged_at']}")
+                                if fr.get('action_notes'):
+                                    st.info(f"👮 Action Taken: {fr['action_notes']}")
+
+                            with fc_c2:
+                                st.markdown("##### 👮 " + ("प्रशासनिक कार्रवाई" if is_hi else "Enforcement Action"))
+                                act_choice = st.selectbox(
+                                    "Select Action:",
+                                    ["Action Taken / Blacklisted", "Fact-Check Alert Issued", "Dismissed (Genuine Info)", "Forwarded to Cyber Police"],
+                                    key=f"act_sel_{fr['id']}"
+                                )
+                                admin_act_note = st.text_input("Officer Action Note:", placeholder="e.g. Number blacklisted & fact check posted", key=f"act_note_{fr['id']}")
+                                
+                                act_btn1, act_btn2 = st.columns(2)
+                                with act_btn1:
+                                    if st.button("⚖️ " + ("कार्रवाई लागू करें" if is_hi else "Apply Action"), key=f"apply_act_{fr['id']}"):
+                                        resolve_fake_report(fr['id'], act_choice, admin_act_note.strip() or act_choice)
+                                        st.success("Action recorded!")
+                                        st.rerun()
+                                with act_btn2:
+                                    if fr['item_type'] == 'incident':
+                                        if st.button("🗑️ " + ("आपदा हटाएं" if is_hi else "Purge Incident"), key=f"del_fake_inc_{fr['id']}"):
+                                            delete_disaster(fr['item_id'])
+                                            add_custom_alert(None, f"FACT CHECK: Incident #{fr['item_id']} was verified as a false alarm. Area is completely safe.", f"📢 फैक्ट चेक: घटना #{fr['item_id']} फर्जी सूचना पाई गई है। क्षेत्र पूर्णतः सुरक्षित है।", "Low")
+                                            resolve_fake_report(fr['id'], "Action Taken / Blacklisted", "Incident deleted and fact-check retraction broadcasted")
+                                            st.success("Fake incident purged & retraction alert issued!")
+                                            st.rerun()
+
+                else:
+                    st.success("✅ " + ("वर्तमान में कोई फर्जी सूचना शिकायत लंबित नहीं है।" if is_hi else "No pending misinformation complaints. The system feed is verified and clean."))
+
+            with fn_subtab2:
+                st.markdown("##### 🚫 " + ("अवरुद्ध / ब्लैकलिस्टेड फोन नंबर" if is_hi else "Blacklisted Phone Registry"))
+                with st.form("manual_blacklist_form"):
+                    st.markdown("##### ➕ " + ("नया नंबर ब्लॉक करें" if is_hi else "Manually Blacklist Phone Number"))
+                    bl_c1, bl_c2 = st.columns(2)
+                    with bl_c1:
+                        new_bl_phone = st.text_input("Phone Number to Block (उदा: 9876543210):")
+                    with bl_c2:
+                        new_bl_reason = st.text_input("Reason for Blocking:", value="Circulating false disaster rumors")
+                    if st.form_submit_button("🚫 " + ("नंबर ब्लैकलिस्ट करें" if is_hi else "Blacklist Contact"), type="primary"):
+                        if new_bl_phone.strip():
+                            blacklist_contact(new_bl_phone.strip(), new_bl_reason.strip())
+                            st.success(f"Phone {new_bl_phone} blacklisted successfully!")
+                            st.rerun()
+
+                df_banned = get_blacklisted_contacts()
+                if not df_banned.empty:
+                    st.dataframe(df_banned, use_container_width=True, hide_index=True)
+                    unban_sel = st.selectbox("Select Phone to Restore:", df_banned['contact_phone'].tolist(), key="unban_sel")
+                    if st.button("🟢 " + ("प्रतिबंध हटाएं (Unblock Number)" if is_hi else "Unban / Restore Number")):
+                        unblacklist_contact(unban_sel)
+                        st.success(f"Phone {unban_sel} unblocked.")
+                        st.rerun()
+                else:
+                    st.info("No blacklisted phone numbers currently.")
+
+        # ─────────────────────────────────────────────────────────────────────
+        # TAB 8: SITUATION REPORT (SITREP) & DATA EXPORT CENTER
+        # ─────────────────────────────────────────────────────────────────────
+        with ad_tab8:
             st.subheader("📊 " + ("दैनिक स्थिति रिपोर्ट (SitRep) एवं डेटा एक्सपोर्ट" if is_hi else "Daily Situation Report (SitRep) & Data Exports"))
 
             st.markdown(f"""
@@ -2369,9 +2530,9 @@ elif selected_nav == t("nav_admin", lang):
                     )
 
         # ─────────────────────────────────────────────────────────────────────
-        # TAB 8: DATABASE TOOLS & RESEED
+        # TAB 9: DATABASE TOOLS & RESEED
         # ─────────────────────────────────────────────────────────────────────
-        with ad_tab8:
+        with ad_tab9:
             st.subheader("⚙️ " + ("डेटाबेस ऑपरेशन्स एवं रीसीड टूल्स" if is_hi else "Database Tools & Reseeding Engine"))
             st.markdown("Reset database and reseed complete official Uttarakhand mock data with dynamic live timestamps across all 13 districts.")
 
@@ -2379,5 +2540,6 @@ elif selected_nav == t("nav_admin", lang):
                 sample_data.insert_sample_data(reset_existing=True)
                 st.success("Database successfully reset and reseeded with live timestamps!")
                 st.rerun()
+
 
 

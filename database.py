@@ -187,6 +187,48 @@ def create_tables():
             )
         ''')
 
+        # Fake Reports & Misinformation Grievance Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS fake_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_type TEXT NOT NULL,
+                item_id INTEGER NOT NULL,
+                flagged_by TEXT DEFAULT 'Anonymous Citizen',
+                suspect_contact TEXT DEFAULT 'N/A',
+                reason TEXT NOT NULL,
+                details TEXT NOT NULL,
+                status TEXT DEFAULT 'Pending Investigation',
+                action_notes TEXT DEFAULT '',
+                flagged_at TEXT NOT NULL
+            )
+        ''')
+
+        # Blacklisted Phone Numbers / Hoax Callers Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS blacklisted_reporters (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                contact_phone TEXT UNIQUE NOT NULL,
+                reason TEXT NOT NULL,
+                banned_at TEXT NOT NULL,
+                banned_by TEXT DEFAULT 'State Incident Commander'
+            )
+        ''')
+
+        # Real-Time Live Shelter Runtime Logs
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS shelter_runtime_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                shelter_id INTEGER NOT NULL,
+                live_occupied INTEGER NOT NULL,
+                food_status TEXT DEFAULT 'Sufficient',
+                water_status TEXT DEFAULT 'Adequate',
+                medical_status TEXT DEFAULT 'First Aid Only',
+                reported_by TEXT DEFAULT 'Ground Volunteer',
+                reported_at TEXT NOT NULL,
+                FOREIGN KEY (shelter_id) REFERENCES shelters(id) ON DELETE CASCADE
+            )
+        ''')
+
         # Indexes for fast querying
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_disasters_status ON disasters(status)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_disasters_loc ON disasters(location)")
@@ -195,8 +237,10 @@ def create_tables():
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_hospitals_district ON hospitals(district)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_alerts_disaster_id ON alerts(disaster_id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_suggestions_cat ON suggestions(category)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_fake_status ON fake_reports(status)")
         
         conn.commit()
+
 
 
 def add_disaster(dtype, location, severity, description="Emergency incident reported", description_hi=None, reporter_contact="N/A", evidence_media="", lat=None, lon=None):
@@ -579,6 +623,112 @@ def delete_suggestion(sug_id):
         cursor.execute("DELETE FROM suggestions WHERE id = ?", (sug_id,))
         conn.commit()
 
+# ─────────────────────────────────────────────────────────────────────────────
+# FAKE NEWS & MISINFORMATION GRIEVANCE FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def report_fake_info(item_type, item_id, flagged_by, reason, details, suspect_contact="N/A"):
+    """File a citizen report against fake/misleading disaster information."""
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO fake_reports (item_type, item_id, flagged_by, suspect_contact, reason, details, status, flagged_at)
+            VALUES (?, ?, ?, ?, ?, ?, 'Pending Investigation', ?)
+            """,
+            (item_type, item_id, flagged_by, suspect_contact, reason, details, date_str)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+def get_all_fake_reports(status_filter=None):
+    """Fetch all fake info grievance reports."""
+    query = "SELECT * FROM fake_reports WHERE 1=1"
+    params = []
+    if status_filter and status_filter != "All":
+        query += " AND status = ?"
+        params.append(status_filter)
+    query += " ORDER BY id DESC"
+    with get_connection() as conn:
+        return pd.read_sql_query(query, conn, params=params)
+
+def resolve_fake_report(report_id, action_type, admin_notes=""):
+    """Admin resolution on a flagged fake info report."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE fake_reports 
+            SET status = ?, action_notes = ?
+            WHERE id = ?
+            """,
+            (action_type, admin_notes, report_id)
+        )
+        conn.commit()
+
+def blacklist_contact(phone, reason="Repeatedly reporting fake disaster hoaxes"):
+    """Blacklist a phone number from submitting disaster reports."""
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO blacklisted_reporters (contact_phone, reason, banned_at, banned_by)
+            VALUES (?, ?, ?, 'State Disaster Authority')
+            """,
+            (phone.strip(), reason, date_str)
+        )
+        conn.commit()
+
+def is_contact_blacklisted(phone):
+    """Check if a phone number is barred for spreading false alerts."""
+    if not phone or phone.strip() == "N/A" or not phone.strip():
+        return False
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM blacklisted_reporters WHERE contact_phone = ?", (phone.strip(),))
+        return cursor.fetchone()[0] > 0
+
+def get_blacklisted_contacts():
+    """Fetch all blacklisted phone numbers."""
+    with get_connection() as conn:
+        return pd.read_sql_query("SELECT * FROM blacklisted_reporters ORDER BY id DESC", conn)
+
+def unblacklist_contact(phone):
+    """Restore a phone number."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM blacklisted_reporters WHERE contact_phone = ?", (phone.strip(),))
+        conn.commit()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RUNTIME LIVE SHELTER CHECK-IN & LOGISTICS FUNCTIONS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def submit_shelter_runtime_checkin(shelter_id, live_occupied, food_status="Sufficient", water_status="Adequate", medical_status="First Aid Only", reported_by="Ground Volunteer"):
+    """Submit real-time ground check-in for relief shelter occupancy and supplies."""
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        # Update current shelter occupancy in main table
+        cursor.execute("UPDATE shelters SET occupied = ? WHERE id = ?", (live_occupied, shelter_id))
+        # Insert audit trail log
+        cursor.execute(
+            """
+            INSERT INTO shelter_runtime_logs (shelter_id, live_occupied, food_status, water_status, medical_status, reported_by, reported_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (shelter_id, live_occupied, food_status, water_status, medical_status, reported_by, date_str)
+        )
+        conn.commit()
+
+def get_shelter_runtime_history(shelter_id):
+    """Fetch live runtime updates for a specific relief shelter."""
+    with get_connection() as conn:
+        return pd.read_sql_query("SELECT * FROM shelter_runtime_logs WHERE shelter_id = ? ORDER BY id DESC LIMIT 10", conn, params=[shelter_id])
+
 def drop_and_recreate_tables():
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -588,6 +738,9 @@ def drop_and_recreate_tables():
         cursor.execute("DROP TABLE IF EXISTS shelters")
         cursor.execute("DROP TABLE IF EXISTS disasters")
         cursor.execute("DROP TABLE IF EXISTS suggestions")
+        cursor.execute("DROP TABLE IF EXISTS fake_reports")
+        cursor.execute("DROP TABLE IF EXISTS blacklisted_reporters")
+        cursor.execute("DROP TABLE IF EXISTS shelter_runtime_logs")
         conn.commit()
     create_tables()
 
@@ -623,4 +776,5 @@ def get_dashboard_summary():
             "shelter_occupied": shelter_occ,
             "shelter_capacity": shelter_cap
         }
+
 
