@@ -410,6 +410,175 @@ def update_suggestion_status(suggestion_id, new_status):
         cursor.execute("UPDATE suggestions SET status = ?, status_hi = ? WHERE id = ?", (new_status, status_hi, suggestion_id))
         conn.commit()
 
+def edit_disaster(did, dtype, location, severity, description, status, reporter_contact="N/A", lat=None, lon=None):
+    """Update all fields of an existing disaster incident."""
+    type_hi = TYPE_HI_MAP.get(dtype, dtype)
+    loc_hi = DISTRICT_NAMES_MAP.get(location, {}).get("hi", location)
+    sev_hi = SEV_HI_MAP.get(severity, severity)
+    status_hi = STATUS_HI_MAP.get(status, status)
+    
+    if lat is None or lon is None:
+        coords = DISTRICT_COORDINATES.get(location, (30.0668, 79.0193))
+        lat, lon = coords[0], coords[1]
+
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE disasters 
+            SET type = ?, type_hi = ?, location = ?, location_hi = ?, severity = ?, severity_hi = ?, 
+                description = ?, reporter_contact = ?, status = ?, status_hi = ?, latitude = ?, longitude = ?
+            WHERE id = ?
+            """,
+            (dtype, type_hi, location, loc_hi, severity, sev_hi, description, reporter_contact, status, status_hi, lat, lon, did)
+        )
+        conn.commit()
+
+def delete_disaster(did):
+    """Delete a disaster record and its associated alerts."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM alerts WHERE disaster_id = ?", (did,))
+        cursor.execute("DELETE FROM disasters WHERE id = ?", (did,))
+        conn.commit()
+
+def dispatch_rescue_team(did, team_name, leader_name, leader_phone, personnel_count=15, notes="Rapid response deployment"):
+    """Dispatch SDRF/NDRF rescue unit and post automated high-priority alert."""
+    date_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE disasters SET status = 'Under Control', status_hi = 'नियंत्रण में (Under Control)' WHERE id = ?", (did,))
+        
+        # Insert broadcast alert for dispatch
+        msg_en = f"RESCUE DISPATCHED: {team_name} ({personnel_count} personnel under {leader_name}, Ph: {leader_phone}) deployed to incident #{did}. Notes: {notes}"
+        msg_hi = f"🪖 राहत एवं बचाव दस्ता रवाना: {team_name} ({personnel_count} जवान, प्रभारी: {leader_name}, फोन: {leader_phone}) को घटना #{did} के लिए तैनात किया गया।"
+        cursor.execute(
+            """
+            INSERT INTO alerts (disaster_id, message, message_hi, severity, timestamp, target)
+            VALUES (?, ?, ?, 'High', ?, 'All')
+            """,
+            (did, msg_en, msg_hi, date_str)
+        )
+        conn.commit()
+
+def add_hospital(name, name_hi, district, district_hi, beds_available, beds_total, contact, lat=None, lon=None):
+    """Add a new hospital facility."""
+    if lat is None or lon is None:
+        coords = DISTRICT_COORDINATES.get(district, (30.0668, 79.0193))
+        lat, lon = coords[0], coords[1]
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO hospitals (name, name_hi, district, district_hi, beds_available, beds_total, contact, latitude, longitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (name, name_hi, district, district_hi, beds_available, beds_total, contact, lat, lon)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+def edit_hospital(hid, name, name_hi, district, district_hi, beds_available, beds_total, contact, lat=None, lon=None):
+    """Update hospital facility details."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE hospitals
+            SET name = ?, name_hi = ?, district = ?, district_hi = ?, beds_available = ?, beds_total = ?, contact = ?, latitude = COALESCE(?, latitude), longitude = COALESCE(?, longitude)
+            WHERE id = ?
+            """,
+            (name, name_hi, district, district_hi, beds_available, beds_total, contact, lat, lon, hid)
+        )
+        conn.commit()
+
+def delete_hospital(hid):
+    """Remove a hospital record."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM hospitals WHERE id = ?", (hid,))
+        conn.commit()
+
+def add_shelter(name, name_hi, district, district_hi, capacity, occupied, contact, lat=None, lon=None):
+    """Add a new relief shelter."""
+    if lat is None or lon is None:
+        coords = DISTRICT_COORDINATES.get(district, (30.0668, 79.0193))
+        lat, lon = coords[0], coords[1]
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO shelters (name, name_hi, district, district_hi, capacity, occupied, contact, latitude, longitude)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (name, name_hi, district, district_hi, capacity, occupied, contact, lat, lon)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+def edit_shelter(sid, name, name_hi, district, district_hi, capacity, occupied, contact, lat=None, lon=None):
+    """Update relief shelter details."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE shelters
+            SET name = ?, name_hi = ?, district = ?, district_hi = ?, capacity = ?, occupied = ?, contact = ?, latitude = COALESCE(?, latitude), longitude = COALESCE(?, longitude)
+            WHERE id = ?
+            """,
+            (name, name_hi, district, district_hi, capacity, occupied, contact, lat, lon, sid)
+        )
+        conn.commit()
+
+def delete_shelter(sid):
+    """Remove a relief shelter."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM shelters WHERE id = ?", (sid,))
+        conn.commit()
+
+def add_resource(type, type_hi, name, name_hi, district, district_hi, quantity, unit="Units", unit_hi="इकाइयां", available=1):
+    """Add a new stockpile / relief supply."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO resources (type, type_hi, name, name_hi, district, district_hi, quantity, unit, unit_hi, available)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (type, type_hi, name, name_hi, district, district_hi, quantity, unit, unit_hi, available)
+        )
+        conn.commit()
+        return cursor.lastrowid
+
+def edit_resource(rid, name, quantity, available=1):
+    """Update resource stockpile quantity."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE resources SET name = ?, quantity = ?, available = ? WHERE id = ?", (name, quantity, available, rid))
+        conn.commit()
+
+def delete_resource(rid):
+    """Delete a resource stockpile entry."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM resources WHERE id = ?", (rid,))
+        conn.commit()
+
+def delete_alert(aid):
+    """Withdraw or delete a broadcast alert."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM alerts WHERE id = ?", (aid,))
+        conn.commit()
+
+def delete_suggestion(sug_id):
+    """Delete a citizen suggestion."""
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM suggestions WHERE id = ?", (sug_id,))
+        conn.commit()
+
 def drop_and_recreate_tables():
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -454,3 +623,4 @@ def get_dashboard_summary():
             "shelter_occupied": shelter_occ,
             "shelter_capacity": shelter_cap
         }
+
