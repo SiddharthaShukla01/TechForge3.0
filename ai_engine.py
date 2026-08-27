@@ -15,6 +15,8 @@ from PIL.ExifTags import TAGS
 
 import database as db
 import weather as wx
+import pandas as pd
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. AAPDA AI MITRA — INTELLIGENT DISASTER CHATBOT ENGINE
